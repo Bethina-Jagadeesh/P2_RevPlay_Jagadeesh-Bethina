@@ -1,0 +1,16 @@
+package com.rev.app.service;
+
+import com.rev.app.dto.FavoriteSongRequestDto;
+import com.rev.app.dto.FavoriteSongResponseDto;
+
+import java.util.List;
+
+public interface IFavoriteSongService {
+    FavoriteSongResponseDto addFavorite(FavoriteSongRequestDto requestDto);
+
+    List<FavoriteSongResponseDto> getFavoritesByUser(int userId);
+
+    void removeFavorite(int userId, int songId);
+
+    boolean isFavorite(int userId, int songId);
+}
