@@ -4,6 +4,7 @@ import com.rev.app.dto.*;
 import com.rev.app.entity.ArtistAccount;
 import com.rev.app.entity.UserAccount;
 import com.rev.app.repository.IUserAccountRepository;
+import com.rev.app.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -29,15 +30,15 @@ public class UserController {
     private final IGenreService genreService;
 
     public UserController(ISongService songService,
-            IFavoriteSongService favoriteSongService,
-            IPlaylistService playlistService,
-            IListeningHistoryService historyService,
-            IUserAccountService userService,
-            IUserAccountRepository userRepository,
-            IAlbumService albumService,
-            IArtistAccountService artistService,
-            IPodcastService podcastService,
-            IGenreService genreService) {
+                          IFavoriteSongService favoriteSongService,
+                          IPlaylistService playlistService,
+                          IListeningHistoryService historyService,
+                          IUserAccountService userService,
+                          IUserAccountRepository userRepository,
+                          IAlbumService albumService,
+                          IArtistAccountService artistService,
+                          IPodcastService podcastService,
+                          IGenreService genreService) {
         this.songService = songService;
         this.favoriteSongService = favoriteSongService;
         this.playlistService = playlistService;
@@ -50,33 +51,52 @@ public class UserController {
         this.genreService = genreService;
     }
 
-    // --- Helper: resolve current user id from email ---
     private int resolveUserId(UserDetails userDetails) {
-        Optional<UserAccount> user = userRepository.findByEmail(userDetails.getUsername());
-        return user.map(UserAccount::getUserId).orElse(-1);
+        String email = userDetails.getUsername();
+        Optional<UserAccount> user = userRepository.findByEmail(email);
+        if (user.isPresent())
+            return user.get().getUserId();
+
+        // Check if it's an Artist instead via service
+        Optional<ArtistAccount> artist = artistService.getArtistByEmail(email);
+        return artist.map(ArtistAccount::getArtistId).orElse(-1);
     }
 
-    // ===================== DASHBOARD =====================
+    private void markFavorites(List<SongResponseDto> songs, int userId) {
+        if (userId <= 0)
+            return;
+        List<FavoriteSongResponseDto> favorites = favoriteSongService.getFavoritesByUser(userId);
+        java.util.Set<Integer> favoriteSongIds = favorites.stream()
+                .map(FavoriteSongResponseDto::getSongId)
+                .collect(java.util.stream.Collectors.toSet());
+        for (SongResponseDto song : songs) {
+            song.setFavorite(favoriteSongIds.contains(song.getSongId()));
+        }
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         List<SongResponseDto> songs = songService.getAllSongs();
+        int userId = resolveUserId(userDetails);
+        markFavorites(songs, userId);
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
         model.addAttribute("songs", songs);
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - Dashboard");
         model.addAttribute("email", userDetails.getUsername());
-        return "dashboard";
+        return "dashboard/home";
     }
 
-    // ===================== LIBRARY =====================
     @GetMapping("/library")
     public String library(Model model,
-            @RequestParam(required = false, defaultValue = "0") int genreId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                          @RequestParam(required = false, defaultValue = "0") int genreId,
+                          @AuthenticationPrincipal UserDetails userDetails) {
         List<SongResponseDto> songs = genreId > 0
                 ? songService.getSongsByGenreId(genreId)
                 : songService.getAllSongs();
+        int userId = resolveUserId(userDetails);
+        markFavorites(songs, userId);
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
         model.addAttribute("isArtist", isArtist);
@@ -84,15 +104,16 @@ public class UserController {
         model.addAttribute("selectedGenre", genreId);
         model.addAttribute("title", "RevPlay - Library");
         model.addAttribute("email", userDetails.getUsername());
-        return "library";
+        return "listener/library";
     }
 
-    // ===================== SEARCH =====================
     @GetMapping("/search")
     public String search(Model model,
-            @RequestParam(required = false, defaultValue = "") String q,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                         @RequestParam(required = false, defaultValue = "") String q,
+                         @AuthenticationPrincipal UserDetails userDetails) {
         List<SongResponseDto> results = q.isEmpty() ? List.of() : songService.searchSongs(q);
+        int userId = resolveUserId(userDetails);
+        markFavorites(results, userId);
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
         model.addAttribute("isArtist", isArtist);
@@ -100,27 +121,37 @@ public class UserController {
         model.addAttribute("query", q);
         model.addAttribute("title", "RevPlay - Search");
         model.addAttribute("email", userDetails.getUsername());
-        return "search";
+        return "listener/search";
     }
 
-    // ===================== FAVORITES =====================
     @GetMapping("/favorites")
     public String favorites(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         int userId = resolveUserId(userDetails);
         List<FavoriteSongResponseDto> favorites = favoriteSongService.getFavoritesByUser(userId);
+
+        List<SongResponseDto> songs = favorites.stream()
+                .map(f -> {
+                    SongResponseDto s = songService.getSongById(f.getSongId());
+                    if (s != null)
+                        s.setFavorite(true);
+                    return s;
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toList());
+
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
         model.addAttribute("isArtist", isArtist);
-        model.addAttribute("favorites", favorites);
+        model.addAttribute("songs", songs);
         model.addAttribute("title", "RevPlay - Liked Songs");
         model.addAttribute("email", userDetails.getUsername());
-        return "favorites";
+        return "listener/favorites";
     }
 
     @PostMapping("/favorites/add/{songId}")
     public String addFavorite(@PathVariable int songId,
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestHeader(value = "Referer", defaultValue = "/user/dashboard") String referer) {
+                              @AuthenticationPrincipal UserDetails userDetails,
+                              @RequestHeader(value = "Referer", defaultValue = "/user/dashboard") String referer) {
         int userId = resolveUserId(userDetails);
         FavoriteSongRequestDto dto = new FavoriteSongRequestDto(userId, songId);
         favoriteSongService.addFavorite(dto);
@@ -129,18 +160,28 @@ public class UserController {
 
     @PostMapping("/favorites/remove/{songId}")
     public String removeFavorite(@PathVariable int songId,
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestHeader(value = "Referer", defaultValue = "/user/favorites") String referer) {
+                                 @AuthenticationPrincipal UserDetails userDetails,
+                                 @RequestHeader(value = "Referer", defaultValue = "/user/favorites") String referer) {
         int userId = resolveUserId(userDetails);
         favoriteSongService.removeFavorite(userId, songId);
         return "redirect:" + referer;
     }
 
-    // ===================== PLAY A SONG =====================
+    @PostMapping("/favorites/toggle/{songId}")
+    @ResponseBody
+    public java.util.Map<String, Object> toggleFavorite(@PathVariable int songId,
+                                                        @AuthenticationPrincipal UserDetails userDetails) {
+        int userId = resolveUserId(userDetails);
+        boolean liked = favoriteSongService.toggleFavorite(userId, songId);
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("liked", liked);
+        return response;
+    }
+
     @PostMapping("/play/{songId}")
     @ResponseBody
     public SongResponseDto playSong(@PathVariable int songId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                                    @AuthenticationPrincipal UserDetails userDetails) {
         int userId = resolveUserId(userDetails);
         songService.incrementPlayCount(songId);
         ListeningHistoryRequestDto historyDto = new ListeningHistoryRequestDto(userId, songId, "play");
@@ -148,7 +189,6 @@ public class UserController {
         return songService.getSongById(songId);
     }
 
-    // ===================== PLAYLISTS =====================
     @GetMapping("/playlists")
     public String playlists(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         int userId = resolveUserId(userDetails);
@@ -162,12 +202,12 @@ public class UserController {
         model.addAttribute("newPlaylist", new PlaylistRequestDto());
         model.addAttribute("title", "RevPlay - Playlists");
         model.addAttribute("email", userDetails.getUsername());
-        return "playlists";
+        return "listener/playlists";
     }
 
     @PostMapping("/playlists/create")
     public String createPlaylist(@ModelAttribute PlaylistRequestDto request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                                 @AuthenticationPrincipal UserDetails userDetails) {
         int userId = resolveUserId(userDetails);
         request.setUserId(userId);
         playlistService.createPlaylist(request);
@@ -182,7 +222,7 @@ public class UserController {
 
     @GetMapping("/playlists/{id}")
     public String playlistDetail(@PathVariable int id, Model model,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                                 @AuthenticationPrincipal UserDetails userDetails) {
         PlaylistResponseDto playlist = playlistService.getPlaylistById(id);
         List<Integer> songIds = playlistService.getSongIdsInPlaylist(id);
         List<SongResponseDto> songsInPlaylist = songIds.stream()
@@ -198,7 +238,7 @@ public class UserController {
         model.addAttribute("allSongs", allSongs);
         model.addAttribute("title", "RevPlay - " + (playlist != null ? playlist.getName() : "Playlist"));
         model.addAttribute("email", userDetails.getUsername());
-        return "playlist_detail";
+        return "listener/playlist_detail";
     }
 
     @PostMapping("/playlists/{id}/songs/add/{songId}")
@@ -213,7 +253,6 @@ public class UserController {
         return "redirect:/user/playlists/" + id;
     }
 
-    // ===================== LISTENING HISTORY =====================
     @GetMapping("/history")
     public String history(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         int userId = resolveUserId(userDetails);
@@ -224,7 +263,7 @@ public class UserController {
         model.addAttribute("history", history);
         model.addAttribute("title", "RevPlay - Listening History");
         model.addAttribute("email", userDetails.getUsername());
-        return "history";
+        return "listener/history";
     }
 
     @PostMapping("/history/clear")
@@ -234,7 +273,6 @@ public class UserController {
         return "redirect:/user/history?cleared=true";
     }
 
-    // ===================== PROFILE =====================
     @GetMapping("/profile")
     public String profile(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
@@ -263,14 +301,14 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - Profile");
         model.addAttribute("email", email);
-        return "profile";
+        return "listener/profile";
     }
 
     @PostMapping("/profile/update")
     public String updateProfile(@RequestParam("fullName") String fullName,
-            @RequestParam(value = "bio", required = false) String bio,
-            @RequestParam(value = "profilePhoto", required = false) org.springframework.web.multipart.MultipartFile file,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                                @RequestParam(value = "bio", required = false) String bio,
+                                @RequestParam(value = "profilePhoto", required = false) org.springframework.web.multipart.MultipartFile file,
+                                @AuthenticationPrincipal UserDetails userDetails) {
 
         String email = userDetails.getUsername();
         boolean isArtist = userDetails.getAuthorities().stream()
@@ -287,7 +325,7 @@ public class UserController {
                 java.nio.file.Path path = java.nio.file.Paths.get(uploadDir + fileName);
                 java.nio.file.Files.copy(file.getInputStream(), path,
                         java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                photoUrl = "/uploads/profiles/" + fileName;
+                photoUrl = "/static/css/uploads/profiles/" + fileName;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -318,7 +356,6 @@ public class UserController {
         return "redirect:/user/profile?updated=true";
     }
 
-    // ===================== BROWSING =====================
     @GetMapping("/browse-albums")
     public String browseAlbums(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         List<AlbumResponseDto> albums = albumService.getAllAlbums();
@@ -328,7 +365,7 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - Browse Albums");
         model.addAttribute("email", userDetails.getUsername());
-        return "browse_albums";
+        return "listener/browse_albums";
     }
 
     @GetMapping("/browse-artists")
@@ -340,7 +377,7 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - Browse Artists");
         model.addAttribute("email", userDetails.getUsername());
-        return "browse_artists";
+        return "listener/browse_artists";
     }
 
     @GetMapping("/browse-podcasts")
@@ -352,7 +389,7 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - Browse Podcasts");
         model.addAttribute("email", userDetails.getUsername());
-        return "browse_podcasts";
+        return "listener/browse_podcasts";
     }
 
     @GetMapping("/browse-genres")
@@ -364,13 +401,15 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - Browse Genres");
         model.addAttribute("email", userDetails.getUsername());
-        return "browse_genres";
+        return "listener/browse_genres";
     }
 
     @GetMapping("/albums/{id}/songs")
     public String viewAlbumSongs(@PathVariable int id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         AlbumResponseDto album = albumService.getAlbumById(id);
         List<SongResponseDto> songs = songService.getSongsByAlbumId(id);
+        int userId = resolveUserId(userDetails);
+        markFavorites(songs, userId);
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
         model.addAttribute("album", album);
@@ -378,13 +417,15 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - " + album.getTitle());
         model.addAttribute("email", userDetails.getUsername());
-        return "view_songs";
+        return "listener/view_songs";
     }
 
     @GetMapping("/artists/{id}/songs")
     public String viewArtistSongs(@PathVariable int id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         ArtistAccountResponseDto artist = artistService.getArtistById(id);
         List<SongResponseDto> songs = songService.getSongsByArtistId(id);
+        int userId = resolveUserId(userDetails);
+        markFavorites(songs, userId);
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
         model.addAttribute("artist", artist);
@@ -392,13 +433,15 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - " + artist.getStageName());
         model.addAttribute("email", userDetails.getUsername());
-        return "view_songs";
+        return "listener/view_songs";
     }
 
     @GetMapping("/genres/{id}/songs")
     public String viewGenreSongs(@PathVariable int id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         GenreResponseDto genre = genreService.getGenreById(id);
         List<SongResponseDto> songs = songService.getSongsByGenreId(id);
+        int userId = resolveUserId(userDetails);
+        markFavorites(songs, userId);
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
         model.addAttribute("genre", genre);
@@ -406,6 +449,6 @@ public class UserController {
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - " + genre.getGenreName());
         model.addAttribute("email", userDetails.getUsername());
-        return "view_songs";
+        return "listener/view_songs";
     }
 }

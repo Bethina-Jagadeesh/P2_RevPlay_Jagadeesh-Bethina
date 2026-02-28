@@ -50,4 +50,13 @@ public class Song {
 
     @Transient
     private String genreName;
+
+    @Transient
+    private String albumName;
+
+    @Transient
+    private String artistName;
+
+    @Transient
+    private String coverImageUrl;
 }

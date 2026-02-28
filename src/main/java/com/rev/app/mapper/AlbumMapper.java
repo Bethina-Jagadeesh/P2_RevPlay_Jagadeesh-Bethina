@@ -31,6 +31,7 @@ public class AlbumMapper {
                 .description(entity.getDescription())
                 .coverImageUrl(entity.getCoverImageUrl())
                 .createdAt(entity.getCreatedAt())
+                .artistName(entity.getArtistName())
                 .build();
     }
 }

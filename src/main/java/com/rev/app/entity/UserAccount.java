@@ -41,6 +41,9 @@ public class UserAccount {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

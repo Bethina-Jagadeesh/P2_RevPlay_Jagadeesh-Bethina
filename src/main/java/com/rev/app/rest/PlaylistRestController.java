@@ -37,7 +37,7 @@ public class PlaylistRestController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PlaylistResponseDto> updatePlaylist(@PathVariable int id,
-            @RequestBody PlaylistRequestDto requestDto) {
+                                                              @RequestBody PlaylistRequestDto requestDto) {
         PlaylistResponseDto updated = playlistService.updatePlaylist(id, requestDto);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

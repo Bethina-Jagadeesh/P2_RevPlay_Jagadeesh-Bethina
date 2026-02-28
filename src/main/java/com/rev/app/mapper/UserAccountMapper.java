@@ -14,13 +14,12 @@ public class UserAccountMapper {
         UserAccount entity = new UserAccount();
         entity.setFullName(dto.getFullName());
         entity.setEmail(dto.getEmail());
-        entity.setPasswordHash(dto.getPassword()); // In a real app, hash this!
+        entity.setPasswordHash(dto.getPassword());
         entity.setPhone(dto.getPhone());
         entity.setSecurityQuestion(dto.getSecurityQuestion());
         entity.setSecurityAnswerHash(dto.getSecurityAnswer());
         entity.setPasswordHint(dto.getPasswordHint());
-        entity.setStatus("ACTIVE"); // Default
-        entity.setProfileImageUrl(dto.getProfileImageUrl());
+        entity.setStatus("ACTIVE");
         return entity;
     }
 

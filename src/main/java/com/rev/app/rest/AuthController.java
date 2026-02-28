@@ -10,10 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,10 +23,10 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(UserDetailsService userDetailsService,
-            JwtUtil jwtUtil,
-            IUserAccountService userService,
-            IArtistAccountService artistService,
-            PasswordEncoder passwordEncoder) {
+                          JwtUtil jwtUtil,
+                          IUserAccountService userService,
+                          IArtistAccountService artistService,
+                          PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
@@ -40,22 +37,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto request) {
         try {
-            // Note: In real app, make sure to configure DaoAuthenticationProvider
-            // But manually checking also works if DaoAuthenticationProvider is missing due
-            // to CustomUserDetailsService
             UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
             if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
-                // To keep it simple, if plain text or basic mapping fails
-                // Let's assume plain text mapping for now if encoding is disabled on older P1.
-                // You should use passwordEncoder.matches() instead of equals() in PROD.
-                if (!request.getPassword().equals(userDetails.getPassword())
-                        && !passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
-                    throw new BadCredentialsException("Incorrect username or password");
-                }
+                throw new BadCredentialsException("Incorrect username or password");
             }
 
-            // Generate token
             final String jwt = jwtUtil.generateToken(userDetails);
 
             return ResponseEntity.ok(new AuthResponseDto(jwt, userDetails.getUsername(), "Login Successful"));

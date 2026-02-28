@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -25,4 +24,8 @@ public class SongResponseDto {
     private String isActive;
     private LocalDateTime createdAt;
     private String genreName;
+    private String albumName;
+    private String artistName;
+    private String coverImageUrl;
+    private boolean isFavorite;
 }

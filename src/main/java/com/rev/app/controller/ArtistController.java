@@ -1,12 +1,16 @@
 package com.rev.app.controller;
 
-import com.rev.app.dto.*;
+import com.rev.app.dto.AlbumRequestDto;
+import com.rev.app.dto.AlbumResponseDto;
+import com.rev.app.dto.SongRequestDto;
+import com.rev.app.dto.SongResponseDto;
+import com.rev.app.dto.GenreResponseDto;
 import com.rev.app.entity.ArtistAccount;
 import com.rev.app.repository.IArtistAccountRepository;
 import com.rev.app.service.IAlbumService;
+import com.rev.app.service.ISongService;
 import com.rev.app.service.IGenreService;
 import com.rev.app.service.IPodcastService;
-import com.rev.app.service.ISongService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -27,10 +31,10 @@ public class ArtistController {
     private final IPodcastService podcastService;
 
     public ArtistController(ISongService songService,
-            IAlbumService albumService,
-            IGenreService genreService,
-            IArtistAccountRepository artistRepository,
-            IPodcastService podcastService) {
+                            IAlbumService albumService,
+                            IGenreService genreService,
+                            IArtistAccountRepository artistRepository,
+                            IPodcastService podcastService) {
         this.songService = songService;
         this.albumService = albumService;
         this.genreService = genreService;
@@ -38,12 +42,10 @@ public class ArtistController {
         this.podcastService = podcastService;
     }
 
-    // Helper: get current artist
     private Optional<ArtistAccount> currentArtist(UserDetails userDetails) {
         return artistRepository.findByEmail(userDetails.getUsername());
     }
 
-    // ===================== DASHBOARD =====================
     @GetMapping("/dashboard")
     public String dashboard(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
@@ -62,10 +64,9 @@ public class ArtistController {
 
         model.addAttribute("title", "Artist Dashboard - RevPlay");
         model.addAttribute("email", email);
-        return "artist_dashboard";
+        return "artist/dashboard";
     }
 
-    // ===================== UPLOAD MUSIC =====================
     @GetMapping("/upload")
     public String uploadPage(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         List<GenreResponseDto> genres = genreService.getAllGenres();
@@ -79,13 +80,13 @@ public class ArtistController {
         model.addAttribute("isArtist", true);
         model.addAttribute("title", "Upload Music - RevPlay");
         model.addAttribute("songRequest", new SongRequestDto());
-        return "upload_music";
+        return "artist/upload";
     }
 
     @PostMapping("/upload")
     public String processUpload(@ModelAttribute SongRequestDto request,
-            @RequestParam("songFile") org.springframework.web.multipart.MultipartFile songFile,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                                @RequestParam("songFile") org.springframework.web.multipart.MultipartFile songFile,
+                                @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
         if (artistOpt.isPresent()) {
             ArtistAccount artist = artistOpt.get();
@@ -103,7 +104,7 @@ public class ArtistController {
                     java.nio.file.Files.copy(songFile.getInputStream(), path,
                             java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-                    request.setFileUrl("/uploads/songs/" + fileName);
+                    request.setFileUrl("/static/css/uploads/songs/" + fileName);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return "redirect:/artist/upload?error=upload_failed";
@@ -119,14 +120,12 @@ public class ArtistController {
         return "redirect:/artist/dashboard?uploaded=true";
     }
 
-    // ===================== DELETE SONG =====================
     @PostMapping("/songs/{id}/delete")
     public String deleteSong(@PathVariable int id) {
         songService.deleteSong(id);
         return "redirect:/artist/dashboard?deleted=true";
     }
 
-    // ===================== ALBUMS =====================
     @GetMapping("/albums")
     public String albums(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
@@ -139,12 +138,12 @@ public class ArtistController {
         model.addAttribute("isArtist", true);
         model.addAttribute("title", "My Albums - RevPlay");
         model.addAttribute("email", userDetails.getUsername());
-        return "artist_albums";
+        return "artist/albums";
     }
 
     @PostMapping("/albums/create")
     public String createAlbum(@ModelAttribute AlbumRequestDto request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                              @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
         artistOpt.ifPresent(artist -> {
             request.setArtistId(artist.getArtistId());
@@ -167,10 +166,9 @@ public class ArtistController {
         model.addAttribute("isArtist", true);
         model.addAttribute("title", "Album Songs - RevPlay");
         model.addAttribute("email", userDetails.getUsername());
-        return "artist_album_songs";
+        return "artist/album_songs";
     }
 
-    // ===================== ANALYTICS =====================
     @GetMapping("/analytics")
     public String analytics(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
@@ -191,10 +189,9 @@ public class ArtistController {
         }
         model.addAttribute("title", "Analytics - RevPlay");
         model.addAttribute("email", userDetails.getUsername());
-        return "artist_analytics";
+        return "artist/analytics";
     }
 
-    // ===================== MY SONGS =====================
     @GetMapping("/my-songs")
     public String mySongs(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
@@ -205,10 +202,9 @@ public class ArtistController {
         }
         model.addAttribute("title", "My Songs - RevPlay");
         model.addAttribute("email", userDetails.getUsername());
-        return "artist_songs";
+        return "artist/songs";
     }
 
-    // ===================== PODCASTS =====================
     @GetMapping("/my-podcasts")
     public String myPodcasts(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
@@ -220,15 +216,14 @@ public class ArtistController {
         }
         model.addAttribute("title", "My Podcasts - RevPlay");
         model.addAttribute("email", userDetails.getUsername());
-        return "artist_podcasts";
+        return "artist/podcasts";
     }
 
     @PostMapping("/podcasts/create")
     public String createPodcast(@ModelAttribute com.rev.app.dto.PodcastRequestDto request,
-            @RequestParam("podcastFile") org.springframework.web.multipart.MultipartFile podcastFile,
-            @AuthenticationPrincipal UserDetails userDetails) {
+                                @RequestParam("podcastFile") org.springframework.web.multipart.MultipartFile podcastFile,
+                                @AuthenticationPrincipal UserDetails userDetails) {
 
-        // 50MB limit check
         if (podcastFile.getSize() > 50 * 1024 * 1024) {
             return "redirect:/artist/my-podcasts?error=file_too_large";
         }
@@ -250,9 +245,6 @@ public class ArtistController {
                     java.nio.file.Files.copy(podcastFile.getInputStream(), path,
                             java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-                    // Note: PodcastRequestDto might not have a direct file variable,
-                    // usually it's used for episodes. But user wants podcast upload.
-                    // Assuming PodcastRequestDto has a field for simple implementation.
                 } catch (Exception e) {
                     e.printStackTrace();
                     return "redirect:/artist/my-podcasts?error=upload_failed";

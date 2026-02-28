@@ -19,7 +19,7 @@ public class SongMapper {
         entity.setDurationSeconds(dto.getDurationSeconds());
         entity.setReleaseDate(dto.getReleaseDate());
         entity.setFileUrl(dto.getFileUrl());
-        entity.setIsActive("ACTIVE"); // Default
+        entity.setIsActive("ACTIVE");
         return entity;
     }
 
@@ -41,6 +41,7 @@ public class SongMapper {
                 .genreName(entity.getGenreName())
                 .albumName(entity.getAlbumName())
                 .artistName(entity.getArtistName())
+                .coverImageUrl(entity.getCoverImageUrl())
                 .build();
     }
 }

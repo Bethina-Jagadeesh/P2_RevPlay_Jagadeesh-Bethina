@@ -10,19 +10,17 @@ public class ArtistAccountMapper {
 
     public ArtistAccount toEntity(ArtistAccountRequestDto dto) {
         if (dto == null)
-
             return null;
         ArtistAccount entity = new ArtistAccount();
         entity.setStageName(dto.getStageName());
         entity.setEmail(dto.getEmail());
-        entity.setPasswordHash(dto.getPassword()); // Hash in real app
+        entity.setPasswordHash(dto.getPassword());
         entity.setBio(dto.getBio());
         entity.setGenre(dto.getGenre());
         entity.setInstagramLink(dto.getInstagramLink());
         entity.setYoutubeLink(dto.getYoutubeLink());
         entity.setSpotifyLink(dto.getSpotifyLink());
-        entity.setStatus("ACTIVE"); // Default
-        entity.setProfileImageUrl(dto.getProfileImageUrl());
+        entity.setStatus("ACTIVE");
         return entity;
     }
 
