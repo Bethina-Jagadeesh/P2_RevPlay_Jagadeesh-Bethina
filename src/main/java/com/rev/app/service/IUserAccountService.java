@@ -2,7 +2,6 @@ package com.rev.app.service;
 
 import com.rev.app.dto.UserAccountRequestDto;
 import com.rev.app.dto.UserAccountResponseDto;
-
 import java.util.List;
 
 public interface IUserAccountService {

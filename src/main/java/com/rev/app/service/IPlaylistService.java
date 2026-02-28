@@ -2,7 +2,6 @@ package com.rev.app.service;
 
 import com.rev.app.dto.PlaylistRequestDto;
 import com.rev.app.dto.PlaylistResponseDto;
-
 import java.util.List;
 
 public interface IPlaylistService {

@@ -3,41 +3,41 @@ package com.rev.app.service;
 import com.rev.app.dto.FavoriteSongRequestDto;
 import com.rev.app.dto.FavoriteSongResponseDto;
 import com.rev.app.entity.FavoriteSong;
-import com.rev.app.mapper.IFavoriteSongMapper;
+import com.rev.app.mapper.FavoriteSongMapper;
 import com.rev.app.repository.IFavoriteSongRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
-import com.rev.app.service.IFavoriteSongService;
+
 @Service
 public class FavoriteSongServiceImpl implements IFavoriteSongService {
 
     private final IFavoriteSongRepository favoriteSongRepository;
+    private final FavoriteSongMapper favoriteSongMapper;
 
-    public FavoriteSongServiceImpl(IFavoriteSongRepository favoriteSongRepository) {
+    public FavoriteSongServiceImpl(IFavoriteSongRepository favoriteSongRepository,
+                                   FavoriteSongMapper favoriteSongMapper) {
         this.favoriteSongRepository = favoriteSongRepository;
+        this.favoriteSongMapper = favoriteSongMapper;
     }
 
     @Override
     public FavoriteSongResponseDto addFavorite(FavoriteSongRequestDto requestDto) {
-        // Only add if not already a favorite
         if (!favoriteSongRepository.existsByUserIdAndSongId(requestDto.getUserId(), requestDto.getSongId())) {
-            FavoriteSong favorite = IFavoriteSongMapper.toEntity(requestDto);
+            FavoriteSong favorite = favoriteSongMapper.toEntity(requestDto);
             favorite = favoriteSongRepository.save(favorite);
-            return IFavoriteSongMapper.toResponseDto(favorite);
+            return favoriteSongMapper.toResponseDto(favorite);
         }
-        // Already exists - return existing
         return favoriteSongRepository.findByUserId(requestDto.getUserId()).stream()
                 .filter(f -> f.getSongId() == requestDto.getSongId())
-                .map(IFavoriteSongMapper::toResponseDto)
+                .map(favoriteSongMapper::toResponseDto)
                 .findFirst().orElse(null);
     }
 
     @Override
     public List<FavoriteSongResponseDto> getFavoritesByUser(int userId) {
         return favoriteSongRepository.findByUserId(userId).stream()
-                .map(IFavoriteSongMapper::toResponseDto)
+                .map(favoriteSongMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -49,5 +49,21 @@ public class FavoriteSongServiceImpl implements IFavoriteSongService {
     @Override
     public boolean isFavorite(int userId, int songId) {
         return favoriteSongRepository.existsByUserIdAndSongId(userId, songId);
+    }
+
+    @Override
+    public boolean toggleFavorite(int userId, int songId) {
+        if (favoriteSongRepository.existsByUserIdAndSongId(userId, songId)) {
+            favoriteSongRepository.deleteByUserIdAndSongId(userId, songId);
+            return false;
+        } else {
+            FavoriteSong favorite = FavoriteSong.builder()
+                    .userId(userId)
+                    .songId(songId)
+                    .favoritedAt(java.time.LocalDateTime.now())
+                    .build();
+            favoriteSongRepository.save(favorite);
+            return true;
+        }
     }
 }

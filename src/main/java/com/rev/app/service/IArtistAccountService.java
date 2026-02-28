@@ -2,7 +2,6 @@ package com.rev.app.service;
 
 import com.rev.app.dto.ArtistAccountRequestDto;
 import com.rev.app.dto.ArtistAccountResponseDto;
-
 import java.util.List;
 
 public interface IArtistAccountService {

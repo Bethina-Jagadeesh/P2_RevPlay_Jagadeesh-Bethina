@@ -2,7 +2,6 @@ package com.rev.app.service;
 
 import com.rev.app.dto.PodcastRequestDto;
 import com.rev.app.dto.PodcastResponseDto;
-
 import java.util.List;
 
 public interface IPodcastService {

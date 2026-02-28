@@ -4,11 +4,10 @@ import com.rev.app.dto.PlaylistRequestDto;
 import com.rev.app.dto.PlaylistResponseDto;
 import com.rev.app.entity.Playlist;
 import com.rev.app.entity.PlaylistSong;
-import com.rev.app.mapper.IPlaylistMapper;
+import com.rev.app.mapper.PlaylistMapper;
 import com.rev.app.repository.IPlaylistRepository;
 import com.rev.app.repository.IPlaylistSongRepository;
 import org.springframework.stereotype.Service;
-import com.rev.app.service.IPlaylistService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,47 +17,50 @@ public class PlaylistServiceImpl implements IPlaylistService {
 
     private final IPlaylistRepository playlistRepository;
     private final IPlaylistSongRepository playlistSongRepository;
+    private final PlaylistMapper playlistMapper;
 
     public PlaylistServiceImpl(IPlaylistRepository playlistRepository,
-            IPlaylistSongRepository playlistSongRepository) {
+                               IPlaylistSongRepository playlistSongRepository,
+                               PlaylistMapper playlistMapper) {
         this.playlistRepository = playlistRepository;
         this.playlistSongRepository = playlistSongRepository;
+        this.playlistMapper = playlistMapper;
     }
 
     @Override
     public PlaylistResponseDto createPlaylist(PlaylistRequestDto requestDto) {
-        Playlist playlist = IPlaylistMapper.toEntity(requestDto);
+        Playlist playlist = playlistMapper.toEntity(requestDto);
         playlist.setCreatedAt(LocalDateTime.now());
         playlist.setUpdatedAt(LocalDateTime.now());
         playlist = playlistRepository.save(playlist);
-        return IPlaylistMapper.toResponseDto(playlist);
+        return playlistMapper.toResponseDto(playlist);
     }
 
     @Override
     public PlaylistResponseDto getPlaylistById(int id) {
         return playlistRepository.findById(id)
-                .map(IPlaylistMapper::toResponseDto)
+                .map(playlistMapper::toResponseDto)
                 .orElse(null);
     }
 
     @Override
     public List<PlaylistResponseDto> getAllPlaylists() {
         return playlistRepository.findAll().stream()
-                .map(IPlaylistMapper::toResponseDto)
+                .map(playlistMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<PlaylistResponseDto> getPlaylistsByUserId(int userId) {
         return playlistRepository.findByUserId(userId).stream()
-                .map(IPlaylistMapper::toResponseDto)
+                .map(playlistMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<PlaylistResponseDto> getPublicPlaylists() {
         return playlistRepository.findByPrivacyStatus("public").stream()
-                .map(IPlaylistMapper::toResponseDto)
+                .map(playlistMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +73,7 @@ public class PlaylistServiceImpl implements IPlaylistService {
             existingPlaylist.setPrivacyStatus(requestDto.getPrivacyStatus());
             existingPlaylist.setUpdatedAt(LocalDateTime.now());
             playlistRepository.save(existingPlaylist);
-            return IPlaylistMapper.toResponseDto(existingPlaylist);
+            return playlistMapper.toResponseDto(existingPlaylist);
         }
         return null;
     }

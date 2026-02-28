@@ -3,10 +3,10 @@ package com.rev.app.service;
 import com.rev.app.dto.PodcastRequestDto;
 import com.rev.app.dto.PodcastResponseDto;
 import com.rev.app.entity.Podcast;
-import com.rev.app.mapper.IPodcastMapper;
+import com.rev.app.mapper.PodcastMapper;
 import com.rev.app.repository.IPodcastRepository;
 import org.springframework.stereotype.Service;
-import com.rev.app.service.IPodcastService;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,37 +14,39 @@ import java.util.stream.Collectors;
 public class PodcastServiceImpl implements IPodcastService {
 
     private final IPodcastRepository podcastRepository;
+    private final PodcastMapper podcastMapper;
 
-    public PodcastServiceImpl(IPodcastRepository podcastRepository) {
+    public PodcastServiceImpl(IPodcastRepository podcastRepository, PodcastMapper podcastMapper) {
         this.podcastRepository = podcastRepository;
+        this.podcastMapper = podcastMapper;
     }
 
     @Override
     public PodcastResponseDto createPodcast(PodcastRequestDto requestDto) {
-        Podcast podcast = IPodcastMapper.toEntity(requestDto);
-        podcast.setCreatedAt(java.time.LocalDateTime.now());
+        Podcast podcast = podcastMapper.toEntity(requestDto);
+        podcast.setCreatedAt(LocalDateTime.now());
         podcast = podcastRepository.save(podcast);
-        return IPodcastMapper.toResponseDto(podcast);
+        return podcastMapper.toResponseDto(podcast);
     }
 
     @Override
     public PodcastResponseDto getPodcastById(int id) {
         return podcastRepository.findById(id)
-                .map(IPodcastMapper::toResponseDto)
+                .map(podcastMapper::toResponseDto)
                 .orElse(null);
     }
 
     @Override
     public List<PodcastResponseDto> getAllPodcasts() {
         return podcastRepository.findAll().stream()
-                .map(IPodcastMapper::toResponseDto)
+                .map(podcastMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<PodcastResponseDto> getPodcastsByArtistId(int artistId) {
         return podcastRepository.findByArtistId(artistId).stream()
-                .map(IPodcastMapper::toResponseDto)
+                .map(podcastMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -55,7 +57,7 @@ public class PodcastServiceImpl implements IPodcastService {
             existing.setTitle(requestDto.getTitle());
             existing.setDescription(requestDto.getDescription());
             podcastRepository.save(existing);
-            return IPodcastMapper.toResponseDto(existing);
+            return podcastMapper.toResponseDto(existing);
         }
         return null;
     }

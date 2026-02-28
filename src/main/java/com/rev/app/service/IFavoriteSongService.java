@@ -13,4 +13,6 @@ public interface IFavoriteSongService {
     void removeFavorite(int userId, int songId);
 
     boolean isFavorite(int userId, int songId);
+
+    boolean toggleFavorite(int userId, int songId);
 }

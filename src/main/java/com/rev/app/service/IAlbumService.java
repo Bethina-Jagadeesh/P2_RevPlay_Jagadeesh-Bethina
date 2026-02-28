@@ -2,7 +2,6 @@ package com.rev.app.service;
 
 import com.rev.app.dto.AlbumRequestDto;
 import com.rev.app.dto.AlbumResponseDto;
-
 import java.util.List;
 
 public interface IAlbumService {

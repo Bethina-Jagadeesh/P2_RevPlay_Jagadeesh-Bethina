@@ -3,12 +3,12 @@ package com.rev.app.service;
 import com.rev.app.dto.SongRequestDto;
 import com.rev.app.dto.SongResponseDto;
 import com.rev.app.entity.Song;
-import com.rev.app.mapper.ISongMapper;
+import com.rev.app.mapper.SongMapper;
+import com.rev.app.repository.ISongRepository;
 import com.rev.app.repository.IAlbumRepository;
 import com.rev.app.repository.IArtistAccountRepository;
-import com.rev.app.repository.ISongRepository;
+import com.rev.app.repository.IGenreRepository;
 import org.springframework.stereotype.Service;
-import com.rev.app.service.ISongService;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,34 +18,47 @@ public class SongServiceImpl implements ISongService {
     private final ISongRepository songRepository;
     private final IAlbumRepository albumRepository;
     private final IArtistAccountRepository artistRepository;
+    private final IGenreRepository genreRepository;
+    private final SongMapper songMapper;
 
     public SongServiceImpl(ISongRepository songRepository,
-            IAlbumRepository albumRepository,
-            IArtistAccountRepository artistRepository) {
+                           IAlbumRepository albumRepository,
+                           IArtistAccountRepository artistRepository,
+                           IGenreRepository genreRepository,
+                           SongMapper songMapper) {
         this.songRepository = songRepository;
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
+        this.genreRepository = genreRepository;
+        this.songMapper = songMapper;
     }
 
     private void populateNames(Song song) {
         if (song == null)
             return;
-
-        // Fetch Artist Name
-        artistRepository.findById(song.getArtistId()).ifPresent(artist -> song.setArtistName(artist.getStageName()));
-
-        // Fetch Album Name
+        artistRepository.findById(song.getArtistId()).ifPresent(artist -> {
+            song.setArtistName(artist.getStageName());
+            song.setCoverImageUrl(artist.getProfileImageUrl());
+        });
         if (song.getAlbumId() != null && song.getAlbumId() > 0) {
-            albumRepository.findById(song.getAlbumId()).ifPresent(album -> song.setAlbumName(album.getTitle()));
+            albumRepository.findById(song.getAlbumId()).ifPresent(album -> {
+                song.setAlbumName(album.getTitle());
+                if (album.getCoverImageUrl() != null && !album.getCoverImageUrl().isEmpty()) {
+                    song.setCoverImageUrl(album.getCoverImageUrl());
+                }
+            });
+        }
+        if (song.getGenreId() > 0) {
+            genreRepository.findById(song.getGenreId()).ifPresent(genre -> song.setGenreName(genre.getGenreName()));
         }
     }
 
     @Override
     public SongResponseDto createSong(SongRequestDto requestDto) {
-        Song song = ISongMapper.toEntity(requestDto);
+        Song song = songMapper.toEntity(requestDto);
         song = songRepository.save(song);
         populateNames(song);
-        return ISongMapper.toResponseDto(song);
+        return songMapper.toResponseDto(song);
     }
 
     @Override
@@ -53,7 +66,7 @@ public class SongServiceImpl implements ISongService {
         return songRepository.findById(id)
                 .map(song -> {
                     populateNames(song);
-                    return ISongMapper.toResponseDto(song);
+                    return songMapper.toResponseDto(song);
                 })
                 .orElse(null);
     }
@@ -62,7 +75,7 @@ public class SongServiceImpl implements ISongService {
     public List<SongResponseDto> getAllSongs() {
         return songRepository.findAll().stream()
                 .peek(this::populateNames)
-                .map(ISongMapper::toResponseDto)
+                .map(songMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -70,7 +83,7 @@ public class SongServiceImpl implements ISongService {
     public List<SongResponseDto> getSongsByArtistId(int artistId) {
         return songRepository.findByArtistId(artistId).stream()
                 .peek(this::populateNames)
-                .map(ISongMapper::toResponseDto)
+                .map(songMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -78,7 +91,7 @@ public class SongServiceImpl implements ISongService {
     public List<SongResponseDto> getSongsByGenreId(int genreId) {
         return songRepository.findByGenreId(genreId).stream()
                 .peek(this::populateNames)
-                .map(ISongMapper::toResponseDto)
+                .map(songMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -86,7 +99,7 @@ public class SongServiceImpl implements ISongService {
     public List<SongResponseDto> getSongsByAlbumId(int albumId) {
         return songRepository.findByAlbumId(albumId).stream()
                 .peek(this::populateNames)
-                .map(ISongMapper::toResponseDto)
+                .map(songMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -94,7 +107,7 @@ public class SongServiceImpl implements ISongService {
     public List<SongResponseDto> searchSongs(String keyword) {
         return songRepository.findByTitleContainingIgnoreCase(keyword).stream()
                 .peek(this::populateNames)
-                .map(ISongMapper::toResponseDto)
+                .map(songMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -102,7 +115,7 @@ public class SongServiceImpl implements ISongService {
     public List<SongResponseDto> getTopSongs() {
         return songRepository.findAllByOrderByPlayCountDesc().stream()
                 .peek(this::populateNames)
-                .map(ISongMapper::toResponseDto)
+                .map(songMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -121,7 +134,7 @@ public class SongServiceImpl implements ISongService {
                 existingSong.setDurationSeconds(requestDto.getDurationSeconds());
             songRepository.save(existingSong);
             populateNames(existingSong);
-            return ISongMapper.toResponseDto(existingSong);
+            return songMapper.toResponseDto(existingSong);
         }
         return null;
     }

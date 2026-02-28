@@ -3,10 +3,9 @@ package com.rev.app.service;
 import com.rev.app.dto.ArtistAccountRequestDto;
 import com.rev.app.dto.ArtistAccountResponseDto;
 import com.rev.app.entity.ArtistAccount;
-import com.rev.app.mapper.IArtistAccountMapper;
+import com.rev.app.mapper.ArtistAccountMapper;
 import com.rev.app.repository.IArtistAccountRepository;
 import org.springframework.stereotype.Service;
-import com.rev.app.service.IArtistAccountService;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,18 +13,21 @@ import java.util.stream.Collectors;
 public class ArtistAccountServiceImpl implements IArtistAccountService {
 
     private final IArtistAccountRepository artistRepository;
+    private final ArtistAccountMapper artistAccountMapper;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public ArtistAccountServiceImpl(IArtistAccountRepository artistRepository,
-            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+                                    ArtistAccountMapper artistAccountMapper,
+                                    org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.artistRepository = artistRepository;
+        this.artistAccountMapper = artistAccountMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional
     public ArtistAccountResponseDto createArtist(ArtistAccountRequestDto requestDto) {
-        ArtistAccount artist = IArtistAccountMapper.toEntity(requestDto);
+        ArtistAccount artist = artistAccountMapper.toEntity(requestDto);
         artist.setPasswordHash(passwordEncoder.encode(requestDto.getPassword()));
 
         if (requestDto.getSecurityAnswer() != null && !requestDto.getSecurityAnswer().isBlank()) {
@@ -34,20 +36,20 @@ public class ArtistAccountServiceImpl implements IArtistAccountService {
         }
 
         artist = artistRepository.save(artist);
-        return IArtistAccountMapper.toResponseDto(artist);
+        return artistAccountMapper.toResponseDto(artist);
     }
 
     @Override
     public ArtistAccountResponseDto getArtistById(int id) {
         return artistRepository.findById(id)
-                .map(IArtistAccountMapper::toResponseDto)
+                .map(artistAccountMapper::toResponseDto)
                 .orElse(null);
     }
 
     @Override
     public List<ArtistAccountResponseDto> getAllArtists() {
         return artistRepository.findAll().stream()
-                .map(IArtistAccountMapper::toResponseDto)
+                .map(artistAccountMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +60,7 @@ public class ArtistAccountServiceImpl implements IArtistAccountService {
             existingArtist.setStageName(requestDto.getStageName());
             existingArtist.setBio(requestDto.getBio());
             artistRepository.save(existingArtist);
-            return IArtistAccountMapper.toResponseDto(existingArtist);
+            return artistAccountMapper.toResponseDto(existingArtist);
         }
         return null;
     }
