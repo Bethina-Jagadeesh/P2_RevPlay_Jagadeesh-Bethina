@@ -24,7 +24,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Get the login type from the request
         String type = null;
         try {
             var attributes = (org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder
@@ -33,10 +32,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 type = attributes.getRequest().getParameter("type");
             }
         } catch (Exception e) {
-            // Not in a request context (e.g. JWT filter)
         }
 
-        // Try to find in UserAccount table if type is listener or null
         if (type == null || "listener".equals(type)) {
             Optional<UserAccount> userOpt = userRepository.findByEmail(email);
             if (userOpt.isPresent()) {
@@ -48,7 +45,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             }
         }
 
-        // Try to find in ArtistAccount table if type is artist or null
         if (type == null || "artist".equals(type)) {
             Optional<ArtistAccount> artistOpt = artistRepository.findByEmail(email);
             if (artistOpt.isPresent()) {

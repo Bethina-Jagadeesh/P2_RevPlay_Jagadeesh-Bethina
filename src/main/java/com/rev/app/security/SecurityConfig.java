@@ -20,48 +20,37 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
-        private final CustomAuthenticationSuccessHandler successHandler;
 
-        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                        CustomAuthenticationSuccessHandler successHandler) {
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
                 this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-                this.successHandler = successHandler;
         }
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
-                                .csrf(AbstractHttpConfigurer::disable)
-                                .authorizeHttpRequests(authz -> authz
-                                                // Permit public UI and Auth endpoints
-                                                .requestMatchers("/", "/login", "/login/artist",
-                                                                "/register/**", "/forgot-password/**",
-                                                                "/api/auth/**", "/css/**", "/js/**", "/uploads/**",
-                                                                "/error")
-                                                .permitAll()
-                                                // Require roles for specific dashboards
-                                                .requestMatchers("/user/**").hasAnyRole("LISTENER", "ARTIST")
-                                                .requestMatchers("/artist/**").hasRole("ARTIST")
-                                                // Require auth for APIs
-                                                .requestMatchers("/api/**").authenticated()
-                                                .anyRequest().authenticated())
-                                // Hybrid Security Logic:
-                                // 1. Session-based for Thymeleaf UI (Form Login)
-                                // 2. JWT-based for REST API (Postman/REST testing)
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                                .formLogin(form -> form
-                                                .loginPage("/login")
-                                                .loginProcessingUrl("/perform_login")
-                                                .successHandler(successHandler) // Use the custom redirect handler
-                                                .failureUrl("/login?error=true")
-                                                .permitAll())
-                                .logout(logout -> logout
-                                                .logoutUrl("/logout")
-                                                .logoutSuccessUrl("/?logout=true")
-                                                .permitAll())
-                                // Keep the JWT filter for API requests (Postman testing)
-                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        .csrf(AbstractHttpConfigurer::disable)
+                        .authorizeHttpRequests(authz -> authz
+                                .requestMatchers("/", "/login/**", "/register/**",
+                                        "/forgot-password/**",
+                                        "/api/auth/**", "/css/**", "/static/css/js/**", "/static/css/uploads/**",
+                                        "/error")
+                                .permitAll()
+                                .requestMatchers("/dashboard/**", "/artist/**", "/user/**", "/songs/**",
+                                        "/albums/**", "/artists/**", "/genres/**")
+                                .authenticated()
+                                .anyRequest().authenticated())
+                        .sessionManagement(session -> session
+                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                        .formLogin(form -> form
+                                .loginPage("/login")
+                                .loginProcessingUrl("/perform_login")
+                                .defaultSuccessUrl("/dashboard", true)
+                                .permitAll())
+                        .logout(logout -> logout
+                                .logoutUrl("/logout")
+                                .logoutSuccessUrl("/?logout=true")
+                                .permitAll())
+                        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }

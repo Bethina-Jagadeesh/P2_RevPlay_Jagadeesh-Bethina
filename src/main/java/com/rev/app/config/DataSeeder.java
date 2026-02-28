@@ -7,10 +7,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * Seeds the database with initial Genre data on application startup.
- * Checks for existing data before inserting to prevent duplicates.
- */
 @Component
 public class DataSeeder implements CommandLineRunner {
 
@@ -22,7 +18,6 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Only seed if the genre table is empty
         if (genreRepository.count() == 0) {
             List<Genre> genres = List.of(
                     Genre.builder().genreName("Pop").build(),
