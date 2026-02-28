@@ -6,7 +6,7 @@ import com.rev.app.entity.Genre;
 import com.rev.app.mapper.IGenreMapper;
 import com.rev.app.repository.IGenreRepository;
 import org.springframework.stereotype.Service;
-
+import com.rev.app.service.IGenreService;
 import java.util.List;
 import java.util.stream.Collectors;
 

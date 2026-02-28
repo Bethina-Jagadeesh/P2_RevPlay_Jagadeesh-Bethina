@@ -6,7 +6,7 @@ import com.rev.app.entity.ListeningHistory;
 import com.rev.app.mapper.IListeningHistoryMapper;
 import com.rev.app.repository.IListeningHistoryRepository;
 import org.springframework.stereotype.Service;
-
+import com.rev.app.service.IListeningHistoryService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -6,6 +6,7 @@ import com.rev.app.entity.Album;
 import com.rev.app.mapper.IAlbumMapper;
 import com.rev.app.repository.IAlbumRepository;
 import org.springframework.stereotype.Service;
+import com.rev.app.service.IAlbumService;
 
 import java.util.List;
 import java.util.stream.Collectors;

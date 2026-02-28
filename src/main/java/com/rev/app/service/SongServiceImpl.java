@@ -8,7 +8,7 @@ import com.rev.app.repository.IAlbumRepository;
 import com.rev.app.repository.IArtistAccountRepository;
 import com.rev.app.repository.ISongRepository;
 import org.springframework.stereotype.Service;
-
+import com.rev.app.service.ISongService;
 import java.util.List;
 import java.util.stream.Collectors;
 

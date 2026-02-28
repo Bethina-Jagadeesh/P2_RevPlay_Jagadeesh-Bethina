@@ -8,7 +8,7 @@ import com.rev.app.mapper.IPlaylistMapper;
 import com.rev.app.repository.IPlaylistRepository;
 import com.rev.app.repository.IPlaylistSongRepository;
 import org.springframework.stereotype.Service;
-
+import com.rev.app.service.IPlaylistService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;

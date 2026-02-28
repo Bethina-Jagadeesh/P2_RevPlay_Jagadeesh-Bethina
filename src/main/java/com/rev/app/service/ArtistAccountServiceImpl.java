@@ -6,7 +6,7 @@ import com.rev.app.entity.ArtistAccount;
 import com.rev.app.mapper.IArtistAccountMapper;
 import com.rev.app.repository.IArtistAccountRepository;
 import org.springframework.stereotype.Service;
-
+import com.rev.app.service.IArtistAccountService;
 import java.util.List;
 import java.util.stream.Collectors;
 

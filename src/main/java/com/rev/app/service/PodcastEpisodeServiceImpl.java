@@ -6,7 +6,7 @@ import com.rev.app.entity.PodcastEpisode;
 import com.rev.app.mapper.IPodcastEpisodeMapper;
 import com.rev.app.repository.IPodcastEpisodeRepository;
 import org.springframework.stereotype.Service;
-
+import com.rev.app.service.IPodcastEpisodeService;
 import java.util.List;
 import java.util.stream.Collectors;
 

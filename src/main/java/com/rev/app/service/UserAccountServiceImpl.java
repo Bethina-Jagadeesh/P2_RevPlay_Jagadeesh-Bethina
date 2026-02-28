@@ -6,7 +6,7 @@ import com.rev.app.entity.UserAccount;
 import com.rev.app.mapper.IUserAccountMapper;
 import com.rev.app.repository.IUserAccountRepository;
 import org.springframework.stereotype.Service;
-
+import com.rev.app.service.IUserAccountService;
 import java.util.List;
 import java.util.stream.Collectors;
 
