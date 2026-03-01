@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, content, scripts)">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' - RevPlay'">RevPlay</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .public-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body class="public-wrapper">
+    <div th:replace="${content}"></div>
+    <div th:replace="${scripts}"></div>
+</body>
+
+</html>

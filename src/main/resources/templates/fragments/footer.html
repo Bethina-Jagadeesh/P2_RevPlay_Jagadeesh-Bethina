@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div th:fragment="footer" class="player-bar"
+        style="background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="player-info" style="display: flex; align-items: center; gap: 15px; width: 30%;">
+            <div class="player-art"
+                style="width: 56px; height: 56px; background: linear-gradient(135deg, #1db954, #121212); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            </div>
+            <div style="overflow: hidden;">
+                <div class="player-title"
+                    style="font-weight: 700; font-size: 0.95rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Select a song to play</div>
+                <div class="player-artist"
+                    style="font-size: 0.8rem; color: #b3b3b3; display: flex; align-items: center; gap: 8px;">
+                    <span class="player-artist-name">RevPlay Music</span>
+                    <button class="player-like-btn" onclick="RevPlayer.toggleCurrentLike()"
+                        style="background: none; border: none; font-size: 1rem; cursor: pointer; color: #b3b3b3; display: none;">
+                        <span class="heart-icon">🤍</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-controls-container"
+            style="flex: 1; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div class="control-btns" style="display: flex; align-items: center; gap: 24px;">
+                <button class="control-btn btn-shuffle" title="Shuffle"
+                    style="font-size: 1.1rem; color: #b3b3b3;">🔀</button>
+                <button class="control-btn player-prev" title="Previous"
+                    style="font-size: 1.3rem; color: #b3b3b3;">⏮</button>
+                <button class="control-btn btn-play"
+                    style="width: 36px; height: 36px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: black; transition: transform 0.2s;">▶</button>
+                <button class="control-btn player-next" title="Next"
+                    style="font-size: 1.3rem; color: #b3b3b3;">⏭</button>
+                <button class="control-btn btn-repeat" title="Repeat"
+                    style="font-size: 1.1rem; color: #b3b3b3;">🔁</button>
+            </div>
+            <div class="player-progress-area"
+                style="width: 100%; display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: #b3b3b3;">
+                <span class="time-current">0:00</span>
+                <div class="progress-bar"
+                    style="flex: 1; height: 4px; background: #4f4f4f; border-radius: 2px; cursor: pointer; position: relative;">
+                    <div class="progress-fill"
+                        style="height: 100%; background: #1db954; border-radius: 2px; width: 0%;">
+                    </div>
+                </div>
+                <span class="time-total">0:00</span>
+            </div>
+        </div>
+
+        <div class="player-volume"
+            style="width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+            <span style="font-size: 1rem; color: #b3b3b3;">🔊</span>
+            <input type="range" class="volume-slider" min="0" max="100" value="80"
+                style="width: 100px; height: 4px; accent-color: #1db954;">
+        </div>
+    </div>
+</body>
+
+</html>
