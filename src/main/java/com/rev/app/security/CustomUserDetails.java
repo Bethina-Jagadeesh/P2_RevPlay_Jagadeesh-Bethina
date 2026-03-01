@@ -9,7 +9,7 @@ import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
 
-    private String username; // Emal
+    private String username;
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
 
@@ -31,7 +31,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username; // Email is used as the unique username
+        return username;
     }
 
     @Override
@@ -51,6 +51,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true; // We can integrate status from UserAccount later
+        return true;
     }
 }

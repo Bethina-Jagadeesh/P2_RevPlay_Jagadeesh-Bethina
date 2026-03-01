@@ -28,29 +28,29 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
-                        .csrf(AbstractHttpConfigurer::disable)
-                        .authorizeHttpRequests(authz -> authz
-                                .requestMatchers("/", "/login/**", "/register/**",
-                                        "/forgot-password/**",
-                                        "/api/auth/**", "/css/**", "/static/css/js/**", "/static/css/uploads/**",
-                                        "/error")
-                                .permitAll()
-                                .requestMatchers("/dashboard/**", "/artist/**", "/user/**", "/songs/**",
-                                        "/albums/**", "/artists/**", "/genres/**")
-                                .authenticated()
-                                .anyRequest().authenticated())
-                        .sessionManagement(session -> session
-                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                        .formLogin(form -> form
-                                .loginPage("/login")
-                                .loginProcessingUrl("/perform_login")
-                                .defaultSuccessUrl("/dashboard", true)
-                                .permitAll())
-                        .logout(logout -> logout
-                                .logoutUrl("/logout")
-                                .logoutSuccessUrl("/?logout=true")
-                                .permitAll())
-                        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authorizeHttpRequests(authz -> authz
+                                                .requestMatchers("/", "/login/**", "/register/**",
+                                                                "/forgot-password/**",
+                                                                "/api/auth/**", "/css/**", "/js/**", "/uploads/**",
+                                                                "/error")
+                                                .permitAll()
+                                                .requestMatchers("/dashboard/**", "/artist/**", "/user/**", "/songs/**",
+                                                                "/albums/**", "/artists/**", "/genres/**")
+                                                .authenticated()
+                                                .anyRequest().authenticated())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                                .formLogin(form -> form
+                                                .loginPage("/login")
+                                                .loginProcessingUrl("/perform_login")
+                                                .defaultSuccessUrl("/dashboard", true)
+                                                .permitAll())
+                                .logout(logout -> logout
+                                                .logoutUrl("/logout")
+                                                .logoutSuccessUrl("/?logout=true")
+                                                .permitAll())
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }
