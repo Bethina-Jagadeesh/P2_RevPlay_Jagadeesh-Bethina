@@ -1,0 +1,100 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/public-layout :: layout(title='Artist Registration', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content" class="auth-container">
+        <div class="auth-card" style="max-width: 550px;">
+            <a href="/" class="back"
+                style="color: var(--text-sub); font-size: 0.85rem; display: block; margin-bottom: 24px;">← Back to
+                home</a>
+            <div class="logo"
+                style="color: var(--primary); font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 8px;">
+                🎵 RevPlay</div>
+            <div
+                style="background: rgba(29, 185, 84, 0.1); color: var(--primary); font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; text-align: center;">
+                🎤 Artist Registration</div>
+            <h2 style="text-align: center; margin-bottom: 4px; color: white;">Become a RevPlay Artist</h2>
+            <p style="text-align: center; color: var(--text-sub); font-size: 0.9rem; margin-bottom: 32px;">Share your
+                music with the world.</p>
+
+            <form th:action="@{/register/artist}" method="POST">
+                <!-- Artist Info -->
+                <p
+                    style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid var(--bg-elevated); padding-bottom: 6px;">
+                    Artist Profile</p>
+
+                <div class="form-group">
+                    <label class="form-label">Stage Name / Artist Name *</label>
+                    <input type="text" name="stageName" class="form-input" placeholder="Your artist/stage name"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address *</label>
+                    <input type="email" name="email" class="form-input" placeholder="artist@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password *</label>
+                    <input type="password" name="password" class="form-input" placeholder="Create a strong password"
+                        required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Primary Genre *</label>
+                    <select name="genre" class="form-input" required>
+                        <option value="">-- Select Genre --</option>
+                        <option value="Pop">Pop</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Hip-Hop">Hip-Hop</option>
+                        <option value="All">All</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Artist Bio</label>
+                    <textarea name="bio" class="form-input" style="height: 100px; resize: vertical;"
+                        placeholder="Tell listeners your story..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Instagram Link</label>
+                    <input type="url" name="instagramLink" class="form-input"
+                        placeholder="https://instagram.com/yourhandle">
+                </div>
+
+                <!-- Security Question -->
+                <p
+                    style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid var(--bg-elevated); padding-bottom: 6px;">
+                    🔒 Security (for Password Recovery)</p>
+                <div class="form-group">
+                    <label class="form-label">Security Question *</label>
+                    <select name="securityQuestion" class="form-input" required>
+                        <option value="">-- Choose a question --</option>
+                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                        <option value="What was the name of your first pet?">What was the name of your first pet?
+                        </option>
+                        <option value="What city were you born in?">What city were you born in?</option>
+                        <option value="What was your childhood nickname?">What was your childhood nickname?</option>
+                        <option value="What is the name of your primary school?">What is the name of your primary
+                            school?</option>
+                        <option value="What is your favourite movie?">What is your favourite movie?</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Security Answer *</label>
+                    <input type="text" name="securityAnswer" class="form-input"
+                        placeholder="Your answer (case sensitive)" required>
+                    <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Remember this exactly — it's
+                        used to verify your identity if you forget your password.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 24px;">CREATE ARTIST
+                    ACCOUNT</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 24px; font-size: 0.85rem; color: var(--text-sub);">
+                Already have an artist account? <a href="/login/artist">Log in here</a>
+            </div>
+        </div>
+    </div>
+    <div th:fragment="scripts"></div>
+</body>
+
+</html>
