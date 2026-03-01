@@ -23,10 +23,10 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(UserDetailsService userDetailsService,
-                          JwtUtil jwtUtil,
-                          IUserAccountService userService,
-                          IArtistAccountService artistService,
-                          PasswordEncoder passwordEncoder) {
+            JwtUtil jwtUtil,
+            IUserAccountService userService,
+            IArtistAccountService artistService,
+            PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
         this.userService = userService;

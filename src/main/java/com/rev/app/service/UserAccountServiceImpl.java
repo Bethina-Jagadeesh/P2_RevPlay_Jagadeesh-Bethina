@@ -17,8 +17,8 @@ public class UserAccountServiceImpl implements IUserAccountService {
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public UserAccountServiceImpl(IUserAccountRepository userRepository,
-                                  UserAccountMapper userAccountMapper,
-                                  org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+            UserAccountMapper userAccountMapper,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userAccountMapper = userAccountMapper;
         this.passwordEncoder = passwordEncoder;
