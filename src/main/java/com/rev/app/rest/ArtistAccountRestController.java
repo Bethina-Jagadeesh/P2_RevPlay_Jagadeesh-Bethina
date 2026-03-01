@@ -37,7 +37,7 @@ public class ArtistAccountRestController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ArtistAccountResponseDto> updateArtist(@PathVariable int id,
-                                                                 @RequestBody ArtistAccountRequestDto requestDto) {
+            @RequestBody ArtistAccountRequestDto requestDto) {
         ArtistAccountResponseDto updated = artistService.updateArtist(id, requestDto);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

@@ -11,6 +11,7 @@ import com.rev.app.service.IAlbumService;
 import com.rev.app.service.ISongService;
 import com.rev.app.service.IGenreService;
 import com.rev.app.service.IPodcastService;
+import com.rev.app.service.IFavoriteSongService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -29,17 +30,20 @@ public class ArtistController {
     private final IGenreService genreService;
     private final IArtistAccountRepository artistRepository;
     private final IPodcastService podcastService;
+    private final IFavoriteSongService favoriteSongService;
 
     public ArtistController(ISongService songService,
-                            IAlbumService albumService,
-                            IGenreService genreService,
-                            IArtistAccountRepository artistRepository,
-                            IPodcastService podcastService) {
+            IAlbumService albumService,
+            IGenreService genreService,
+            IArtistAccountRepository artistRepository,
+            IPodcastService podcastService,
+            IFavoriteSongService favoriteSongService) {
         this.songService = songService;
         this.albumService = albumService;
         this.genreService = genreService;
         this.artistRepository = artistRepository;
         this.podcastService = podcastService;
+        this.favoriteSongService = favoriteSongService;
     }
 
     private Optional<ArtistAccount> currentArtist(UserDetails userDetails) {
@@ -85,8 +89,8 @@ public class ArtistController {
 
     @PostMapping("/upload")
     public String processUpload(@ModelAttribute SongRequestDto request,
-                                @RequestParam("songFile") org.springframework.web.multipart.MultipartFile songFile,
-                                @AuthenticationPrincipal UserDetails userDetails) {
+            @RequestParam("songFile") org.springframework.web.multipart.MultipartFile songFile,
+            @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
         if (artistOpt.isPresent()) {
             ArtistAccount artist = artistOpt.get();
@@ -104,7 +108,7 @@ public class ArtistController {
                     java.nio.file.Files.copy(songFile.getInputStream(), path,
                             java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-                    request.setFileUrl("/static/css/uploads/songs/" + fileName);
+                    request.setFileUrl("/uploads/songs/" + fileName);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return "redirect:/artist/upload?error=upload_failed";
@@ -143,7 +147,7 @@ public class ArtistController {
 
     @PostMapping("/albums/create")
     public String createAlbum(@ModelAttribute AlbumRequestDto request,
-                              @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
         artistOpt.ifPresent(artist -> {
             request.setArtistId(artist.getArtistId());
@@ -176,6 +180,10 @@ public class ArtistController {
             ArtistAccount artist = artistOpt.get();
             List<SongResponseDto> songs = songService.getSongsByArtistId(artist.getArtistId());
             int totalPlays = songs.stream().mapToInt(SongResponseDto::getPlayCount).sum();
+
+            List<Integer> songIds = songs.stream().map(SongResponseDto::getSongId).toList();
+            long totalFavorites = favoriteSongService.getFavoriteCountForSongs(songIds);
+
             List<SongResponseDto> topSongs = songs.stream()
                     .sorted((a, b) -> b.getPlayCount() - a.getPlayCount())
                     .limit(10)
@@ -184,6 +192,7 @@ public class ArtistController {
             model.addAttribute("topSongs", topSongs);
             model.addAttribute("totalSongs", songs.size());
             model.addAttribute("totalPlays", totalPlays);
+            model.addAttribute("totalFavorites", totalFavorites);
             model.addAttribute("artist", artist);
             model.addAttribute("isArtist", true);
         }
@@ -221,8 +230,8 @@ public class ArtistController {
 
     @PostMapping("/podcasts/create")
     public String createPodcast(@ModelAttribute com.rev.app.dto.PodcastRequestDto request,
-                                @RequestParam("podcastFile") org.springframework.web.multipart.MultipartFile podcastFile,
-                                @AuthenticationPrincipal UserDetails userDetails) {
+            @RequestParam("podcastFile") org.springframework.web.multipart.MultipartFile podcastFile,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
         if (podcastFile.getSize() > 50 * 1024 * 1024) {
             return "redirect:/artist/my-podcasts?error=file_too_large";
@@ -232,6 +241,7 @@ public class ArtistController {
         if (artistOpt.isPresent()) {
             ArtistAccount artist = artistOpt.get();
             request.setArtistId(artist.getArtistId());
+            request.setHostName(artist.getStageName() != null ? artist.getStageName() : artist.getEmail());
 
             if (!podcastFile.isEmpty()) {
                 try {
@@ -244,6 +254,8 @@ public class ArtistController {
                     java.nio.file.Path path = java.nio.file.Paths.get(uploadDir + fileName);
                     java.nio.file.Files.copy(podcastFile.getInputStream(), path,
                             java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                    request.setFileUrl("/uploads/podcasts/" + fileName);
 
                 } catch (Exception e) {
                     e.printStackTrace();

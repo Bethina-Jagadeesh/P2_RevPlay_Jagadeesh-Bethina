@@ -17,8 +17,8 @@ public class ArtistAccountServiceImpl implements IArtistAccountService {
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public ArtistAccountServiceImpl(IArtistAccountRepository artistRepository,
-                                    ArtistAccountMapper artistAccountMapper,
-                                    org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+            ArtistAccountMapper artistAccountMapper,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.artistRepository = artistRepository;
         this.artistAccountMapper = artistAccountMapper;
         this.passwordEncoder = passwordEncoder;
