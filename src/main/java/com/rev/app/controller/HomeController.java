@@ -28,10 +28,10 @@ public class HomeController {
     private final PasswordEncoder passwordEncoder;
 
     public HomeController(IUserAccountService userService,
-                          IArtistAccountService artistService,
-                          IUserAccountRepository userRepository,
-                          IArtistAccountRepository artistRepository,
-                          PasswordEncoder passwordEncoder) {
+            IArtistAccountService artistService,
+            IUserAccountRepository userRepository,
+            IArtistAccountRepository artistRepository,
+            PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.artistService = artistService;
         this.userRepository = userRepository;
@@ -123,8 +123,8 @@ public class HomeController {
 
     @PostMapping("/forgot-password/listener/verify-answer")
     public String verifyListenerAnswer(@RequestParam String email,
-                                       @RequestParam String answer,
-                                       Model model) {
+            @RequestParam String answer,
+            Model model) {
         Optional<UserAccount> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
             model.addAttribute("step", "1");
@@ -147,9 +147,9 @@ public class HomeController {
 
     @PostMapping("/forgot-password/listener/reset")
     public String resetListenerPassword(@RequestParam String email,
-                                        @RequestParam String newPassword,
-                                        @RequestParam String confirmPassword,
-                                        Model model) {
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            Model model) {
         if (!newPassword.equals(confirmPassword)) {
             model.addAttribute("step", "3");
             model.addAttribute("email", email);
@@ -196,8 +196,8 @@ public class HomeController {
 
     @PostMapping("/forgot-password/artist/verify-answer")
     public String verifyArtistAnswer(@RequestParam String email,
-                                     @RequestParam String answer,
-                                     Model model) {
+            @RequestParam String answer,
+            Model model) {
         Optional<ArtistAccount> artistOpt = artistRepository.findByEmail(email);
         if (artistOpt.isEmpty()) {
             model.addAttribute("step", "1");
@@ -221,9 +221,9 @@ public class HomeController {
 
     @PostMapping("/forgot-password/artist/reset")
     public String resetArtistPassword(@RequestParam String email,
-                                      @RequestParam String newPassword,
-                                      @RequestParam String confirmPassword,
-                                      Model model) {
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            Model model) {
         if (!newPassword.equals(confirmPassword)) {
             model.addAttribute("step", "3");
             model.addAttribute("email", email);
