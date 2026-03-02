@@ -2,8 +2,8 @@ package com.rev.app.repository;
 
 import com.rev.app.entity.ListeningHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -13,4 +13,7 @@ public interface IListeningHistoryRepository extends JpaRepository<ListeningHist
 
     @Transactional
     void deleteByUserId(int userId);
+
+    @Transactional
+    void deleteBySongId(int songId);
 }

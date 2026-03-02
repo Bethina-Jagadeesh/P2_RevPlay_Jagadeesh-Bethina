@@ -16,7 +16,7 @@ public class FavoriteSongServiceImpl implements IFavoriteSongService {
     private final FavoriteSongMapper favoriteSongMapper;
 
     public FavoriteSongServiceImpl(IFavoriteSongRepository favoriteSongRepository,
-                                   FavoriteSongMapper favoriteSongMapper) {
+            FavoriteSongMapper favoriteSongMapper) {
         this.favoriteSongRepository = favoriteSongRepository;
         this.favoriteSongMapper = favoriteSongMapper;
     }
@@ -65,5 +65,13 @@ public class FavoriteSongServiceImpl implements IFavoriteSongService {
             favoriteSongRepository.save(favorite);
             return true;
         }
+    }
+
+    @Override
+    public long getFavoriteCountForSongs(List<Integer> songIds) {
+        if (songIds == null || songIds.isEmpty()) {
+            return 0;
+        }
+        return favoriteSongRepository.countBySongIdIn(songIds);
     }
 }

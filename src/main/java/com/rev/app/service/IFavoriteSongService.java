@@ -15,4 +15,6 @@ public interface IFavoriteSongService {
     boolean isFavorite(int userId, int songId);
 
     boolean toggleFavorite(int userId, int songId);
+
+    long getFavoriteCountForSongs(List<Integer> songIds);
 }

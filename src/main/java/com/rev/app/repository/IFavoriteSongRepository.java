@@ -2,8 +2,8 @@ package com.rev.app.repository;
 
 import com.rev.app.entity.FavoriteSong;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -15,4 +15,9 @@ public interface IFavoriteSongRepository extends JpaRepository<FavoriteSong, Fav
 
     @Transactional
     void deleteByUserIdAndSongId(int userId, int songId);
+
+    long countBySongIdIn(List<Integer> songIds);
+
+    @Transactional
+    void deleteBySongId(int songId);
 }
