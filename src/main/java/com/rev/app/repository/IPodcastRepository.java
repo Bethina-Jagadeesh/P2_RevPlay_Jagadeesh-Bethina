@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IPodcastRepository extends JpaRepository<Podcast, Integer> {
+    java.util.List<Podcast> findByArtistId(int artistId);
 }

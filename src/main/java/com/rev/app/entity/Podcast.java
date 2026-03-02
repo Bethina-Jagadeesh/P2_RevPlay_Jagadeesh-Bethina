@@ -29,6 +29,9 @@ public class Podcast {
     @Column(name = "description", length = 500)
     private String description;
 
+    @Column(name = "file_url")
+    private String fileUrl;
+
     @Column(name = "artist_id", nullable = false)
     private int artistId;
 

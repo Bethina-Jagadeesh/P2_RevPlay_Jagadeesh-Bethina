@@ -17,7 +17,7 @@ public class PodcastEpisodeServiceImpl implements IPodcastEpisodeService {
     private final PodcastEpisodeMapper podcastEpisodeMapper;
 
     public PodcastEpisodeServiceImpl(IPodcastEpisodeRepository episodeRepository,
-                                     PodcastEpisodeMapper podcastEpisodeMapper) {
+            PodcastEpisodeMapper podcastEpisodeMapper) {
         this.episodeRepository = episodeRepository;
         this.podcastEpisodeMapper = podcastEpisodeMapper;
     }
