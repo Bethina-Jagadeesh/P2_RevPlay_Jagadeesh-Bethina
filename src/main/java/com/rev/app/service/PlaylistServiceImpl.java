@@ -20,8 +20,8 @@ public class PlaylistServiceImpl implements IPlaylistService {
     private final PlaylistMapper playlistMapper;
 
     public PlaylistServiceImpl(IPlaylistRepository playlistRepository,
-                               IPlaylistSongRepository playlistSongRepository,
-                               PlaylistMapper playlistMapper) {
+            IPlaylistSongRepository playlistSongRepository,
+            PlaylistMapper playlistMapper) {
         this.playlistRepository = playlistRepository;
         this.playlistSongRepository = playlistSongRepository;
         this.playlistMapper = playlistMapper;
