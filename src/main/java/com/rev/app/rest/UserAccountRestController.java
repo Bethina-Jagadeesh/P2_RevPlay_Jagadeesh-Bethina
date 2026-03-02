@@ -37,7 +37,7 @@ public class UserAccountRestController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserAccountResponseDto> updateUser(@PathVariable int id,
-                                                             @RequestBody UserAccountRequestDto requestDto) {
+            @RequestBody UserAccountRequestDto requestDto) {
         UserAccountResponseDto updated = userService.updateUser(id, requestDto);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
