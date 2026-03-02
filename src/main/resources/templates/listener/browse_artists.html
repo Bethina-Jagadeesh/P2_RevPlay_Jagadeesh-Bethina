@@ -1,0 +1,135 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Browse Artists', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .artist-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 24px;
+                margin-top: 20px;
+            }
+
+            .artist-card {
+                background: #181818;
+                padding: 20px;
+                border-radius: 8px;
+                transition: background 0.3s ease;
+                cursor: pointer;
+                text-decoration: none;
+                color: white;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+                border: 1px solid transparent;
+                text-align: center;
+            }
+
+            .artist-card:hover {
+                background: #282828;
+                border-color: #1DB954;
+            }
+
+            .artist-avatar {
+                width: 140px;
+                height: 140px;
+                background: linear-gradient(135deg, #1DB954, #1ed760);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 3.5em;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                overflow: hidden;
+            }
+
+            .artist-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .artist-info h3 {
+                font-size: 1.1em;
+                margin-bottom: 4px;
+            }
+
+            .artist-info p {
+                color: #b3b3b3;
+                font-size: 0.85em;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .verified-badge {
+                color: #4CB3FF;
+                font-size: 0.9em;
+                margin-left: 4px;
+            }
+
+            /* Hide global search bar only on this page */
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+
+        <div style="margin-bottom: 24px; margin-top: 16px;">
+            <div style="margin-bottom: 16px;">
+                <h2 style="margin-bottom: 4px;">👥 Featured Artists</h2>
+                <p style="color: #b3b3b3;">The voices you love, all in one place</p>
+            </div>
+            <div class="search-wrapper" style="max-width: 300px; margin-bottom: 0;">
+                <input type="text" id="artistSearch" placeholder="Filter artists..."
+                    onkeyup="filterItems('artistSearch', 'artist-card')">
+            </div>
+        </div>
+
+        <div class="artist-grid">
+            <a th:each="artist : ${artists}" th:href="@{'/user/artists/' + ${artist.artistId} + '/songs'}"
+                class="artist-card">
+                <div class="artist-avatar">
+                    <img th:if="${artist.profileImageUrl != null and !artist.profileImageUrl.isEmpty()}"
+                        th:src="${artist.profileImageUrl}" alt="Artist">
+                    <span th:if="${artist.profileImageUrl == null or artist.profileImageUrl.isEmpty()}">👤</span>
+                </div>
+                <div class="artist-info">
+                    <h3 class="item-title" th:text="${artist.stageName}">Artist Name</h3>
+                    <p>Artist</p>
+                </div>
+            </a>
+
+            <div th:if="${#lists.isEmpty(artists)}" class="empty-state"
+                style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                <p style="font-size: 3em;">👥</p>
+                <p style="margin-top: 16px; color: #b3b3b3;">No artists found.</p>
+            </div>
+        </div>
+        <div style="height: 100px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            function filterItems(inputId, cardClass) {
+                const input = document.getElementById(inputId);
+                const filter = input.value.toUpperCase();
+                const cards = document.getElementsByClassName(cardClass);
+
+                for (let i = 0; i < cards.length; i++) {
+                    const titleElement = cards[i].querySelector('.item-title');
+                    if (titleElement) {
+                        const title = titleElement.innerText;
+                        if (title.toUpperCase().indexOf(filter) > -1) {
+                            cards[i].style.display = "";
+                        } else {
+                            cards[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

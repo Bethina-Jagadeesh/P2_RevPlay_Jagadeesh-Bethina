@@ -12,7 +12,10 @@
         <div th:if="${email != null}" class="user-info-container">
             <div class="user-profile-mini">
                 <span th:text="${email}">user@example.com</span>
-                <div class="mini-avatar">👤</div>
+                <div class="mini-avatar">
+                    <img th:if="${profileImageUrl != null}" th:src="${profileImageUrl}" alt="Profile">
+                    <span th:if="${profileImageUrl == null}">👤</span>
+                </div>
                 <a href="/logout" class="logout" style="margin-left:8px; margin-right:8px; font-weight:700;">Logout</a>
             </div>
         </div>

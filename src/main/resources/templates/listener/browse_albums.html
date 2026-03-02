@@ -1,0 +1,65 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Browse Albums', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            /* Hide global search bar only on this page */
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+
+        <div style="margin-bottom: 24px; margin-top: 16px;">
+            <h2 style="margin-bottom: 16px;">💿 Browse Albums</h2>
+            <div class="search-wrapper" style="max-width: 300px; margin-bottom: 0;">
+                <input type="text" id="albumSearch" placeholder="Filter albums..."
+                    onkeyup="filterItems('albumSearch', 'album-card')">
+            </div>
+        </div>
+
+        <div class="card-grid">
+            <div class="music-card album-card" th:each="album : ${albums}"
+                th:onclick="|location.href='/user/albums/${album.albumId}/songs'|">
+                <div class="art" th:if="${album.coverImageUrl == null or album.coverImageUrl.isEmpty()}"
+                    style="width: 100%; height: 160px; background: linear-gradient(135deg, #333, #111); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                    💿</div>
+                <img th:if="${album.coverImageUrl != null and !album.coverImageUrl.isEmpty()}"
+                    th:src="${album.coverImageUrl}" alt="Art">
+                <div class="play-overlay">▶</div>
+                <h4 class="item-title" th:text="${album.title}">Album Title</h4>
+                <p th:text="${album.artistName != null ? album.artistName : 'Unknown Artist'}">Artist</p>
+            </div>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(albums)}"
+                style="grid-column: 1/-1; text-align: center; color: #b3b3b3; padding: 40px;">
+                <p>No albums found.</p>
+            </div>
+        </div>
+        <div style="height: 120px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            function filterItems(inputId, cardClass) {
+                const input = document.getElementById(inputId);
+                const filter = input.value.toUpperCase();
+                const cards = document.getElementsByClassName(cardClass);
+
+                for (let i = 0; i < cards.length; i++) {
+                    const titleElement = cards[i].querySelector('.item-title');
+                    if (titleElement) {
+                        const title = titleElement.innerText;
+                        if (title.toUpperCase().indexOf(filter) > -1) {
+                            cards[i].style.display = "";
+                        } else {
+                            cards[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

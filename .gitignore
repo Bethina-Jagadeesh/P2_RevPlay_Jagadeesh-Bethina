@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+spring.log
+spring.log.2026-03-01.0.gz
+src/main/resources/static/uploads/

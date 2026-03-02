@@ -1,0 +1,177 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Browse Genres', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .genre-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+                margin-top: 20px;
+            }
+
+            .genre-pill {
+                padding: 12px 32px;
+                border-radius: 50px;
+                background: #282828;
+                color: white;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 1rem;
+                transition: all 0.2s ease;
+                border: 1px solid #333;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            .genre-pill:hover {
+                background: #333;
+                border-color: #1DB954;
+                transform: translateY(-2px);
+                color: white;
+                text-decoration: none;
+            }
+
+            /* Hide global search bar only on this page */
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+
+        <div style="margin-bottom: 32px; margin-top: 16px;">
+            <div style="margin-bottom: 16px;">
+                <h2 style="margin-bottom: 4px;">📚 All Genres</h2>
+                <p style="color: #b3b3b3;">Explore music by category</p>
+            </div>
+            <div class="search-wrapper" style="max-width: 300px; margin-bottom: 0;">
+                <input type="text" id="genreSearch" placeholder="Filter genres..."
+                    onkeyup="filterItems('genreSearch', 'genre-pill')">
+            </div>
+        </div>
+
+        <div class="genre-container">
+            <div th:each="genre : ${genres}" class="genre-pill" th:data-genre-id="${genre.genreId}"
+                th:data-genre-name="${genre.genreName}"
+                onclick="loadGenreSongs(this.getAttribute('data-genre-id'), this.getAttribute('data-genre-name'), this)">
+                <span class="item-title" th:text="${genre.genreName}">Genre Name</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(genres)}" class="empty-state"
+                style="flex-basis: 100%; text-align: center; padding: 60px;">
+                <p style="font-size: 3em;">🎸</p>
+                <p style="margin-top: 16px; color: #b3b3b3;">No genres found.</p>
+            </div>
+        </div>
+
+        <!-- Songs display area -->
+        <div id="genreSongsArea" style="margin-top: 50px; display: none;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                <h2 id="currentGenreTitle" style="color: #fff;"></h2>
+                <span id="songCountText" style="color: #b3b3b3; font-size: 0.9em;"></span>
+            </div>
+
+            <div id="songsListContent">
+                <!-- Data will be injected here -->
+            </div>
+        </div>
+
+        <div style="height: 120px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script th:inline="javascript">
+            function filterItems(inputId, cardClass) {
+                const input = document.getElementById(inputId);
+                const filter = input.value.toUpperCase();
+                const cards = document.getElementsByClassName('genre-pill');
+
+                for (let i = 0; i < cards.length; i++) {
+                    const titleElement = cards[i].querySelector('.item-title');
+                    if (titleElement) {
+                        const title = titleElement.innerText;
+                        cards[i].style.display = title.toUpperCase().includes(filter) ? "" : "none";
+                    }
+                }
+            }
+
+            function loadGenreSongs(genreId, genreName, element) {
+                // Highlight active pill
+                document.querySelectorAll('.genre-pill').forEach(p => p.style.borderColor = "#333");
+                if (element) element.style.borderColor = "#1DB954";
+
+                const area = document.getElementById('genreSongsArea');
+                const content = document.getElementById('songsListContent');
+                const title = document.getElementById('currentGenreTitle');
+                const countText = document.getElementById('songCountText');
+
+                area.style.display = "block";
+                title.innerText = "🎶 " + genreName;
+                content.innerHTML = '<div style="text-align: center; padding: 40px;"><p>Loading songs...</p></div>';
+
+                fetch(`/user/api/genres/${genreId}/songs`)
+                    .then(res => res.json())
+                    .then(songs => {
+                        window.pageSongs = songs; // Update player queue cache for this page
+                        if (!songs || songs.length === 0) {
+                            countText.innerText = "0 songs";
+                            content.innerHTML = `
+                                <div class="empty-state" style="text-align: center; padding: 60px; background: #181818; border-radius: 12px; border: 1px dashed #333;">
+                                    <p style="color: #fff; font-size: 1.2rem;">${genreName} is empty</p>
+                                    <p style="color: #b3b3b3; margin-top: 8px;">Check back later for new tracks!</p>
+                                </div>`;
+                            return;
+                        }
+
+                        countText.innerText = songs.length + " songs";
+
+                        let html = `
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="text-align: left; color: #b3b3b3; border-bottom: 1px solid #282828; font-size: 0.85em; text-transform: uppercase;">
+                                        <th style="padding: 12px;">#</th>
+                                        <th style="padding: 12px;">Title</th>
+                                        <th style="padding: 12px;">Artist</th>
+                                        <th style="padding: 12px;">Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                        songs.forEach((song, idx) => {
+                            const min = Math.floor(song.durationSeconds / 60);
+                            const sec = (song.durationSeconds % 60).toString().padStart(2, '0');
+                            const cover = (song.coverImageUrl && song.coverImageUrl.trim() !== "")
+                                ? `<img src="${song.coverImageUrl}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">`
+                                : `<div style="width: 40px; height: 40px; border-radius: 4px; background: #282828; display: flex; align-items: center; justify-content: center;">🎵</div>`;
+
+                            html += `
+                                <tr onclick="playSong(${song.songId})" style="cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s;" onmouseover="this.style.background='#282828'" onmouseout="this.style.background='transparent'">
+                                    <td style="padding: 12px; color: #b3b3b3; width: 40px;">${idx + 1}</td>
+                                    <td style="padding: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            ${cover}
+                                            <div style="font-weight: 500; color: #fff;">${song.title}</div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px; color: #b3b3b3;">${song.artistName}</td>
+                                    <td style="padding: 12px; color: #b3b3b3;">${min}:${sec}</td>
+                                </tr>
+                            `;
+                        });
+
+                        html += `</tbody></table>`;
+                        content.innerHTML = html;
+                    })
+                    .catch(e => {
+                        console.error("Failed to load songs", e);
+                        content.innerHTML = '<p style="color: #ff5252; text-align: center;">Error loading songs. Please try again.</p>';
+                    });
+            }
+        </script>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Library', content=~{::content}, scripts=~{::scripts}, showSearch=true)}">
+
+<body>
+    <div th:fragment="content">
+        <h2 style="margin-bottom: 24px;">Your Library</h2>
+
+        <div class="card-grid">
+            <!-- Song Card Loop -->
+            <div class="music-card" th:each="song : ${songs}" th:data-song-id="${song.songId}"
+                th:onclick="'playSong(' + ${song.songId} + ')'"
+                style="cursor: pointer; transition: transform 0.3s; position: relative;">
+
+                <div class="art-container"
+                    style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+                    <img th:if="${song.coverImageUrl != null && !song.coverImageUrl.isEmpty()}"
+                        th:src="${song.coverImageUrl}" alt="Cover"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                    <div th:if="${song.coverImageUrl == null || song.coverImageUrl.isEmpty()}"
+                        style="width: 100%; height: 100%; background: linear-gradient(135deg, #1DB954, #121212); display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                        🎵</div>
+                </div>
+
+                <div class="song-meta"
+                    style="margin-top: 12px; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="overflow: hidden; flex: 1; padding-right: 8px;">
+                        <h4 th:text="${song.title}"
+                            style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; margin-bottom: 4px;">
+                            Song Title</h4>
+                        <p th:text="${song.artistName != null ? song.artistName : 'Unknown Artist'}"
+                            style="font-size: 0.8rem; color: #b3b3b3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            Artist</p>
+                    </div>
+                    <button class="like-btn" th:data-song-id="${song.songId}"
+                        th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                        th:classappend="${song.favorite ? 'liked' : ''}"
+                        style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3; margin-top: 2px;">
+                        <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(songs)}"
+            style="margin-top: 40px; text-align: center; color: #b3b3b3; padding: 40px; background: var(--bg-surface); border-radius: 12px;">
+            <p style="font-size: 3rem; margin-bottom: 16px;">📚</p>
+            <p>Your library is currently empty. Go explore some songs!</p>
+        </div>
+
+        <div style="height: 120px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script th:inline="javascript">
+            // Expose the song list for the global playSong helper in player.js
+            window.allSongs = /*[[${songs}]]*/[];
+        </script>
+    </div>
+</body>
+
+</html>

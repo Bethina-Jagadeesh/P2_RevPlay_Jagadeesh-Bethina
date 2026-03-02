@@ -3,9 +3,11 @@ package com.rev.app.service;
 import com.rev.app.dto.AlbumRequestDto;
 import com.rev.app.dto.AlbumResponseDto;
 import com.rev.app.entity.Album;
+import com.rev.app.entity.Song;
 import com.rev.app.mapper.AlbumMapper;
 import com.rev.app.repository.IAlbumRepository;
 import com.rev.app.repository.IArtistAccountRepository;
+import com.rev.app.repository.ISongRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,12 +18,14 @@ public class AlbumServiceImpl implements IAlbumService {
     private final IAlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final IArtistAccountRepository artistAccountRepository;
+    private final ISongRepository songRepository;
 
     public AlbumServiceImpl(IAlbumRepository albumRepository, AlbumMapper albumMapper,
-                            IArtistAccountRepository artistAccountRepository) {
+            IArtistAccountRepository artistAccountRepository, ISongRepository songRepository) {
         this.albumRepository = albumRepository;
         this.albumMapper = albumMapper;
         this.artistAccountRepository = artistAccountRepository;
+        this.songRepository = songRepository;
     }
 
     private Album populateArtistName(Album album) {
@@ -82,6 +86,13 @@ public class AlbumServiceImpl implements IAlbumService {
 
     @Override
     public void deleteAlbum(int id) {
+        List<Song> songs = songRepository.findByAlbumId(id);
+        if (songs != null && !songs.isEmpty()) {
+            for (Song song : songs) {
+                song.setAlbumId(null);
+            }
+            songRepository.saveAll(songs);
+        }
         albumRepository.deleteById(id);
     }
 }

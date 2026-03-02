@@ -1,0 +1,227 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Playlist Details', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .back-link {
+                color: #1DB954;
+                text-decoration: none;
+                font-size: 0.9em;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+
+            .back-link:hover {
+                text-decoration: underline;
+            }
+
+            .playlist-header {
+                background: linear-gradient(135deg, #1a2a4a, #1DB954);
+                padding: 30px;
+                border-radius: 12px;
+                margin-bottom: 30px;
+            }
+
+            .playlist-header h1 {
+                font-size: 1.8em;
+            }
+
+            .playlist-header p {
+                color: rgba(255, 255, 255, 0.75);
+                margin-top: 6px;
+            }
+
+            section {
+                background: #181818;
+                padding: 24px;
+                border-radius: 12px;
+                margin-bottom: 24px;
+            }
+
+            section h2 {
+                font-size: 1.1em;
+                margin-bottom: 16px;
+                color: #b3b3b3;
+                text-transform: uppercase;
+                font-size: 0.85em;
+                letter-spacing: 1px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th {
+                text-align: left;
+                color: #b3b3b3;
+                border-bottom: 1px solid #282828;
+                padding: 10px;
+                font-size: 0.8em;
+                text-transform: uppercase;
+            }
+
+            td {
+                padding: 12px 10px;
+                border-bottom: 1px solid #1a1a1a;
+            }
+
+            tr:hover td {
+                background: #222;
+            }
+
+            .btn-remove {
+                background: transparent;
+                border: 1px solid #ff5252;
+                color: #ff5252;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 0.78em;
+                cursor: pointer;
+            }
+
+            .btn-remove:hover {
+                background: #ff5252;
+                color: white;
+            }
+
+            .add-form {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            select {
+                background: #282828;
+                border: 1px solid #383838;
+                color: white;
+                padding: 9px 14px;
+                border-radius: 8px;
+                font-size: 0.9em;
+                flex: 1;
+            }
+
+            select:focus {
+                outline: 1px solid #1DB954;
+            }
+
+            .btn-add {
+                background: #1DB954;
+                color: white;
+                border: none;
+                padding: 9px 20px;
+                border-radius: 24px;
+                font-size: 0.9em;
+                font-weight: bold;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+
+            .btn-add:hover {
+                background: #1ed760;
+            }
+        </style>
+
+        <a href="/user/playlists" class="back-link">← Back to Playlists</a>
+
+        <div class="playlist-header" th:if="${playlist != null}">
+            <h1>🎵 <span th:text="${playlist.name}">Playlist Name</span></h1>
+            <p
+                th:text="${playlist.description != null && !playlist.description.isEmpty() ? playlist.description : 'No description'}">
+                Description</p>
+        </div>
+
+        <section>
+            <h2>Songs in this Playlist (<span th:text="${#lists.size(songsInPlaylist)}">0</span>)</h2>
+            <table th:if="${!#lists.isEmpty(songsInPlaylist)}">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Artist</th>
+                        <th>Duration</th>
+                        <th></th>
+                        <th th:if="${playlist.userId == currentUserId}">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="song, stat : ${songsInPlaylist}" th:onclick="'playSong(' + ${song.songId} + ')'"
+                        style="cursor: pointer;">
+                        <td style="color:#b3b3b3;" th:text="${stat.index + 1}">1</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img th:if="${song.coverImageUrl != null && !song.coverImageUrl.isEmpty()}"
+                                    th:src="${song.coverImageUrl}" alt="Cover"
+                                    style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                                <div th:if="${song.coverImageUrl == null || song.coverImageUrl.isEmpty()}"
+                                    style="width: 40px; height: 40px; border-radius: 4px; background: #282828; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    🎵</div>
+                                <span th:text="${song.title}" style="font-weight: 500;">Song</span>
+                            </div>
+                        </td>
+                        <td style="color:#b3b3b3;"
+                            th:text="${song.artistName != null ? song.artistName : 'Artist #' + song.artistId}">Artist
+                        </td>
+                        <td style="color:#b3b3b3;"
+                            th:text="${(song.durationSeconds / 60) + ':' + (song.durationSeconds % 60 < 10 ? '0' : '') + (song.durationSeconds % 60)}">
+                            3:00</td>
+                        <td>
+                            <button class="like-btn" th:data-song-id="${song.songId}"
+                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                                th:classappend="${song.favorite ? 'liked' : ''}"
+                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
+                                <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
+                            </button>
+                        </td>
+                        <td th:if="${playlist.userId == currentUserId}" onclick="event.stopPropagation();">
+                            <form
+                                th:action="@{'/user/playlists/' + ${playlist.playlistId} + '/songs/remove/' + ${song.songId}}"
+                                method="post">
+                                <button type="submit" class="btn-remove">✕ Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-state" th:if="${#lists.isEmpty(songsInPlaylist)}"
+                style="text-align: center; color: #b3b3b3; padding: 30px;">
+                <p>No songs in this playlist yet. Add some below!</p>
+            </div>
+        </section>
+
+        <section th:if="${playlist.userId == currentUserId}">
+            <h2>Add a Song</h2>
+            <form th:action="@{'/user/playlists/' + ${playlist.playlistId} + '/songs/add/' + 0}" method="post"
+                id="addSongForm" class="add-form">
+                <select id="songSelect" name="dummy">
+                    <option value="">-- Select a song --</option>
+                    <option th:each="song : ${allSongs}" th:value="${song.songId}"
+                        th:text="${song.title + (song.artistName != null ? ' - ' + song.artistName : '')}">Song</option>
+                </select>
+                <button type="button" class="btn-add" onclick="addSelectedSong()">Add Song</button>
+            </form>
+        </section>
+        <div style="height: 100px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script th:inline="javascript">
+            window.songsInPlaylist = /*[[${songsInPlaylist}]]*/[];
+
+            function addSelectedSong() {
+                const select = document.getElementById('songSelect');
+                const songId = select.value;
+                if (!songId) { alert('Please select a song first.'); return; }
+                const base = window.location.pathname;
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = base + '/songs/add/' + songId;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        </script>
+    </div>
+</body>
+
+</html>

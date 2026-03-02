@@ -4,10 +4,13 @@ import com.rev.app.dto.SongRequestDto;
 import com.rev.app.dto.SongResponseDto;
 import com.rev.app.entity.Song;
 import com.rev.app.mapper.SongMapper;
-import com.rev.app.repository.ISongRepository;
 import com.rev.app.repository.IAlbumRepository;
 import com.rev.app.repository.IArtistAccountRepository;
 import com.rev.app.repository.IGenreRepository;
+import com.rev.app.repository.ISongRepository;
+import com.rev.app.repository.IFavoriteSongRepository;
+import com.rev.app.repository.IListeningHistoryRepository;
+import com.rev.app.repository.IPlaylistSongRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,17 +23,26 @@ public class SongServiceImpl implements ISongService {
     private final IArtistAccountRepository artistRepository;
     private final IGenreRepository genreRepository;
     private final SongMapper songMapper;
+    private final IFavoriteSongRepository favoriteSongRepository;
+    private final IListeningHistoryRepository listeningHistoryRepository;
+    private final IPlaylistSongRepository playlistSongRepository;
 
     public SongServiceImpl(ISongRepository songRepository,
-                           IAlbumRepository albumRepository,
-                           IArtistAccountRepository artistRepository,
-                           IGenreRepository genreRepository,
-                           SongMapper songMapper) {
+            IAlbumRepository albumRepository,
+            IArtistAccountRepository artistRepository,
+            IGenreRepository genreRepository,
+            SongMapper songMapper,
+            IFavoriteSongRepository favoriteSongRepository,
+            IListeningHistoryRepository listeningHistoryRepository,
+            IPlaylistSongRepository playlistSongRepository) {
         this.songRepository = songRepository;
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
         this.genreRepository = genreRepository;
         this.songMapper = songMapper;
+        this.favoriteSongRepository = favoriteSongRepository;
+        this.listeningHistoryRepository = listeningHistoryRepository;
+        this.playlistSongRepository = playlistSongRepository;
     }
 
     private void populateNames(Song song) {
@@ -141,6 +153,9 @@ public class SongServiceImpl implements ISongService {
 
     @Override
     public void deleteSong(int id) {
+        favoriteSongRepository.deleteBySongId(id);
+        listeningHistoryRepository.deleteBySongId(id);
+        playlistSongRepository.deleteBySongId(id);
         songRepository.deleteById(id);
     }
 
