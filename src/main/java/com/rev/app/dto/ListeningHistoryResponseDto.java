@@ -16,4 +16,5 @@ public class ListeningHistoryResponseDto {
     private int songId;
     private LocalDateTime playedAt;
     private String actionType;
+    private String songTitle;
 }

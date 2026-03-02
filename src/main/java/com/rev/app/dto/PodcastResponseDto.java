@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,5 +15,8 @@ public class PodcastResponseDto {
     private String hostName;
     private String category;
     private String description;
-    private LocalDateTime createdAt;
+    private String fileUrl;
+    private int artistId;
+    private String coverImageUrl;
+    private String createdAt;
 }
