@@ -4,14 +4,6 @@
 <body>
     <div th:fragment="content">
         <style>
-            body {
-                font-family: 'Segoe UI', sans-serif;
-                background: #121212;
-                color: white;
-                margin: 0;
-                display: flex;
-            }
-
             .card-container {
                 display: flex;
                 gap: 20px;
@@ -52,38 +44,100 @@
 
             .song-list {
                 margin-top: 40px;
-                background: #181818;
-                padding: 20px;
-                border-radius: 8px;
+                padding: 10px 0;
+            }
+
+            .song-list h3 {
+                padding-left: 15px;
+                margin-bottom: 20px;
             }
 
             table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-top: 15px;
             }
 
             th {
                 text-align: left;
                 color: #b3b3b3;
-                border-bottom: 1px solid #282828;
-                padding: 10px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 15px;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
             }
 
             td {
-                padding: 12px 10px;
-                border-bottom: 1px solid #282828;
+                padding: 12px 15px;
+                color: #b3b3b3;
+                font-size: 14px;
             }
 
-            .logout {
-                position: absolute;
-                bottom: 20px;
-                color: #ff5252;
-                text-decoration: none;
+            .song-row {
+                background: transparent;
+                border-radius: 4px;
+                transition: background 0.3s;
+                cursor: pointer;
+            }
+
+            .song-row:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .song-row:hover .play-icon {
+                display: block;
+            }
+
+            .song-row:hover .index-num {
+                display: none;
+            }
+
+            .index-cell {
+                width: 50px;
+                text-align: center;
+                position: relative;
+            }
+
+            .play-icon {
+                display: none;
+                color: white;
+                font-size: 12px;
+            }
+
+            .song-info {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .song-info img {
+                width: 45px;
+                height: 45px;
+                border-radius: 4px;
+                object-fit: cover;
+                background: #282828;
+            }
+
+            .song-title-main {
+                color: white;
+                font-weight: 500;
+                display: block;
+                font-size: 16px;
+                margin-bottom: 2px;
+            }
+
+            .song-artist-sub {
+                color: #b3b3b3;
+                font-size: 14px;
+            }
+
+            .duration-cell {
+                text-align: left;
             }
         </style>
 
-        <h2 th:text="'Welcome back, ' + ${email}">Welcome</h2>
+        <h2 style="margin-bottom: 8px; margin-top: 16px;">Welcome back, <span
+                th:text="${name != null ? name : email}">Artist</span></h2>
         <p style="color: #b3b3b3; margin-bottom: 24px;">Manage your tracks and see how your music is performing.</p>
 
         <div class="success-msg" th:if="${param.uploaded}"
@@ -93,65 +147,92 @@
             style="background: #3a1a1a; color: #ff5252; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
             🗑️ Song deleted successfully.</div>
 
-        <div class="card-container">
-            <div class="stat-card">
-                <p>Total Songs</p>
-                <h3 th:text="${totalSongs}">0</h3>
-            </div>
-            <div class="stat-card">
-                <p>Total Plays</p>
-                <h3 th:text="${totalPlays != null ? totalPlays : 0}">0</h3>
-            </div>
-            <div class="stat-card">
-                <p>Followers</p>
-                <h3>0</h3>
+        <!-- Top Songs Section -->
+        <div class="song-list" style="margin-top: 20px;" th:if="${not #lists.isEmpty(topSongs)}">
+            <h3 style="margin-bottom: 24px;">Top Songs</h3>
+            <div class="card-grid">
+                <div class="music-card" th:each="song : ${topSongs}" th:data-song-id="${song.songId}"
+                    th:onclick="'playSong(' + ${song.songId} + ')'"
+                    style="cursor: pointer; transition: transform 0.3s; position: relative;">
+
+                    <div class="art-container"
+                        style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+                        <img th:if="${song.coverImageUrl != null && !song.coverImageUrl.isEmpty()}"
+                            th:src="${song.coverImageUrl}" alt="Art"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                        <div th:if="${song.coverImageUrl == null || song.coverImageUrl.isEmpty()}"
+                            style="width: 100%; height: 100%; background: linear-gradient(135deg, #1DB954, #121212); display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                            🎵</div>
+                    </div>
+
+                    <div class="song-meta"
+                        style="margin-top: 12px; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="overflow: hidden; flex: 1; padding-right: 8px;">
+                            <h4 th:text="${song.title}"
+                                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; margin-bottom: 4px;">
+                                Song Title</h4>
+                            <p th:text="${song.artistName != null ? song.artistName : 'Unknown Artist'}"
+                                style="font-size: 0.8rem; color: #b3b3b3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                Artist</p>
+                        </div>
+                        <button class="like-btn" th:data-song-id="${song.songId}"
+                            th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                            th:classappend="${song.favorite ? 'liked' : ''}"
+                            style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3; margin-top: 2px;">
+                            <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <a href="/artist/upload" class="btn-upload">UPLOAD NEW TRACK</a>
+        <!-- Recently Played Section -->
+        <div class="song-list" style="margin-top: 40px;" th:if="${not #lists.isEmpty(recentPlayed)}">
+            <h3 style="margin-bottom: 24px;">Recently Played</h3>
+            <div class="card-grid">
+                <div class="music-card" th:each="song : ${recentPlayed}" th:data-song-id="${song.songId}"
+                    th:onclick="'playSong(' + ${song.songId} + ')'"
+                    style="cursor: pointer; transition: transform 0.3s; position: relative;">
 
-        <div class="song-list">
-            <h3>Recent Uploads</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Album</th>
-                        <th>Plays</th>
-                        <th>Release Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="song : ${songs}" th:onclick="'playSong(' + ${song.songId} + ')'"
-                        style="cursor: pointer;">
-                        <td th:text="${song.title}">Song Title</td>
-                        <td th:text="${song.albumName != null ? song.albumName : 'Single'}">Album Name</td>
-                        <td th:text="${song.playCount}">0</td>
-                        <td
-                            th:text="${song.releaseDate != null ? #temporals.format(song.releaseDate, 'MMM dd, yyyy') : 'N/A'}">
-                            N/A</td>
-                        <td style="display: flex; gap: 10px;" onclick="event.stopPropagation();">
-                            <a href="#" style="color: #1DB954; text-decoration: none;">Edit</a>
-                            <form th:action="@{'/artist/songs/' + ${song.songId} + '/delete'}" method="POST"
-                                onsubmit="return confirm('Are you sure you want to delete this song?');">
-                                <button type="submit"
-                                    style="background: none; border: none; color: #ff5252; cursor: pointer; padding: 0; font-family: inherit; font-size: inherit;">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(songs)}">
-                        <td colspan="5" style="text-align: center; color: #b3b3b3;">No songs uploaded yet.</td>
-                    </tr>
-                </tbody>
-            </table>
+                    <div class="art-container"
+                        style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+                        <img th:if="${song.coverImageUrl != null && !song.coverImageUrl.isEmpty()}"
+                            th:src="${song.coverImageUrl}" alt="Art"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                        <div th:if="${song.coverImageUrl == null || song.coverImageUrl.isEmpty()}"
+                            style="width: 100%; height: 100%; background: linear-gradient(135deg, #1DB954, #121212); display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                            🎵</div>
+                    </div>
+
+                    <div class="song-meta"
+                        style="margin-top: 12px; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="overflow: hidden; flex: 1; padding-right: 8px;">
+                            <h4 th:text="${song.title}"
+                                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; margin-bottom: 4px;">
+                                Song Title</h4>
+                            <p th:text="${song.artistName != null ? song.artistName : 'Unknown Artist'}"
+                                style="font-size: 0.8rem; color: #b3b3b3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                Artist</p>
+                        </div>
+                        <!-- Removed like symbol from recently played as shown in second image -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(topSongs) and #lists.isEmpty(songs)}"
+            style="margin-top: 40px; text-align: center; color: #b3b3b3; padding: 40px; background: var(--bg-surface); border-radius: 12px;">
+            <p style="font-size: 3rem; margin-bottom: 16px;">🎵</p>
+            <p>Welcome! Start by uploading your music to build your profile.</p>
         </div>
         <div style="height: 120px;"></div>
     </div>
 
     <div th:fragment="scripts">
         <script th:inline="javascript">
-            window.allSongs = /*[[${songs}]]*/[];
+            const topStats = /*[[${topSongs}]]*/[];
+            const recents = /*[[${recentPlayed}]]*/[];
+            window.allSongs = [...topStats, ...recents];
         </script>
     </div>
 </body>

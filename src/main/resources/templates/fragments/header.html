@@ -11,7 +11,7 @@
         </form>
         <div th:if="${email != null}" class="user-info-container">
             <div class="user-profile-mini">
-                <span th:text="${email}">user@example.com</span>
+                <span th:text="${name != null ? name : email}">John Doe</span>
                 <div class="mini-avatar">
                     <img th:if="${profileImageUrl != null}" th:src="${profileImageUrl}" alt="Profile">
                     <span th:if="${profileImageUrl == null}">👤</span>

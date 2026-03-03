@@ -171,7 +171,73 @@
             </tbody>
         </table>
 
+        <div class="analytics-row"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <div>
+                <p class="section-title">👥 Top Listeners</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Plays</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="listener : ${topListeners}">
+                            <td>
+                                <div th:text="${listener.fullName}" style="font-weight: bold; font-size: 0.9em;">User
+                                </div>
+                            </td>
+                            <td class="play-count" th:text="${listener.playCount}">0</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(topListeners)}">
+                            <td colspan="2" style="text-align: center; color: #b3b3b3; padding: 20px;">No listener data
+                                yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <p class="section-title">⭐ Favorited By</p>
+                <div style="background: #181818; padding: 20px; border-radius: 10px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 12px;" th:if="${!#lists.isEmpty(favoritedBy)}">
+                        <div th:each="user : ${favoritedBy}"
+                            style="background: #282828; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; color: #b3b3b3; border: 1px solid #333;">
+                            <span th:text="${user.fullName}">User</span>
+                        </div>
+                    </div>
+                    <p th:if="${#lists.isEmpty(favoritedBy)}" style="color: #b3b3b3; text-align: center;">No favorites
+                        yet</p>
+                </div>
+
+                <p class="section-title">📊 Listening Trends</p>
+                <div style="background: #181818; padding: 20px; border-radius: 10px;">
+                    <table style="margin-bottom: 0;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Top Song</th>
+                                <th>Plays</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry, stat : ${trends}" th:if="${stat.index >= stat.size - 7}">
+                                <td th:text="${entry.key}">2025-01-01</td>
+                                <td style="color: #1DB954; font-size: 0.85em;" th:text="${entry.value.topSongTitle}">
+                                    Song Name</td>
+                                <td class="play-count" th:text="${entry.value.totalPlays}">0</td>
+                            </tr>
+                            <tr th:if="${#maps.isEmpty(trends)}">
+                                <td colspan="3" style="text-align: center; color: #b3b3b3;">No trend data yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <p class="section-title">🎵 All Songs</p>
+
         <table th:if="${!#lists.isEmpty(songs)}">
             <thead>
                 <tr>
@@ -192,6 +258,8 @@
                 </tr>
             </tbody>
         </table>
+
+
         <div class="empty-state" th:if="${#lists.isEmpty(songs)}"
             style="text-align: center; color: #b3b3b3; padding: 50px; background: #181818; border-radius: 10px;">
             <p style="font-size:3em;">📊</p>

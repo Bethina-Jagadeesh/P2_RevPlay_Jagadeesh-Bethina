@@ -16,15 +16,29 @@
             body {
                 margin: 0;
                 padding: 0;
-                background: var(--bg-dark);
+                background-color: #000;
+                background-image: radial-gradient(circle at center, rgba(29, 185, 84, 0.1), transparent 85%);
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
                 color: var(--text-main);
                 font-family: 'Inter', sans-serif;
-                overflow: hidden;
+                overflow-y: auto;
                 width: 100vw;
-                height: 100vh;
+                min-height: 100vh;
                 display: flex;
-                align-items: center;
+                align-items: flex-start;
                 justify-content: center;
+            }
+
+            .top-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: linear-gradient(to right, var(--primary), #1ed760);
+                z-index: 100;
             }
 
             .landing-container {
@@ -32,6 +46,9 @@
                 flex-direction: column;
                 align-items: center;
                 z-index: 10;
+                padding: 60px 20px 40px;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .logo-section {
@@ -43,6 +60,8 @@
                 font-size: 5rem;
                 font-weight: 800;
                 margin: 0;
+                padding: 8px 4px;
+                line-height: 1.2;
                 background: linear-gradient(to right, var(--primary), #1ed760);
                 -webkit-background-clip: text;
                 background-clip: text;
@@ -137,7 +156,8 @@
             }
 
             .btn-primary:hover {
-                background: #1ed760;
+                background: #23ff70;
+                color: white;
                 transform: scale(1.02);
             }
 
@@ -152,11 +172,12 @@
             }
 
             .footer-note {
-                position: absolute;
-                bottom: 40px;
+                position: relative;
+                margin-top: 40px;
                 color: #444;
                 font-size: 0.8rem;
                 letter-spacing: 1px;
+                text-align: center;
             }
 
             .bg-glow {
@@ -171,6 +192,7 @@
                 z-index: 0;
             }
         </style>
+        <div class="top-bar"></div>
         <div class="bg-glow"></div>
         <div class="landing-container">
             <div class="logo-section">
@@ -181,23 +203,26 @@
             <div class="cards-grid">
                 <!-- Listener Card -->
                 <div class="card">
-                    <span class="icon">🎧</span>
+                    <img src="https://e7.pngegg.com/pngimages/17/45/png-clipart-man-music-silhouette-note-song-listening-lifestyle-earphones-concept-icon-thumbnail.png"
+                        alt="Listener"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 30px; display: block; border: 3px solid var(--primary); box-shadow: 0 0 20px rgba(29, 185, 84, 0.3); background: white;">
                     <h2>Listener</h2>
                     <p class="description">Discover millions of songs and podcasts from your favorite creators.</p>
                     <div class="actions">
-                        <a href="/login" class="btn btn-primary">Log In as Listener</a>
+                        <a href="/login" class="btn btn-primary">Login as Listener</a>
                         <a href="/register/listener" class="btn btn-outline">Create Listener Account</a>
                     </div>
                 </div>
 
                 <!-- Artist Card -->
                 <div class="card">
-                    <span class="icon">🎤</span>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJ6PIQTT-nE-8r6kcA0is7mJIN7ZKwfoL25Q&s"
+                        alt="Artist"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 30px; display: block; border: 3px solid var(--primary); box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);">
                     <h2>Artist</h2>
                     <p class="description">Upload your tracks, reach new fans, and grow your music career.</p>
                     <div class="actions">
-                        <a href="/login/artist" class="btn btn-primary">Log In as
-                            Artist</a>
+                        <a href="/login/artist" class="btn btn-primary">Login as Artist</a>
                         <a href="/register/artist" class="btn btn-outline">Create Artist Account</a>
                     </div>
                 </div>

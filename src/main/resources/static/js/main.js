@@ -165,6 +165,15 @@ function toggleLike(songId, button) {
                 } else {
                     btn.classList.remove('liked');
                     if (hIcon) hIcon.innerText = '🤍';
+
+                    if (window.location.pathname.includes('/favorites')) {
+                        const row = btn.closest('tr');
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s ease';
+                            row.style.opacity = '0';
+                            setTimeout(() => row.style.display = 'none', 300);
+                        }
+                    }
                 }
             });
 

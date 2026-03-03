@@ -141,7 +141,6 @@
                         <th>Title</th>
                         <th>Artist</th>
                         <th>Duration</th>
-                        <th></th>
                         <th th:if="${playlist.userId == currentUserId}">Action</th>
                     </tr>
                 </thead>
@@ -166,14 +165,6 @@
                         <td style="color:#b3b3b3;"
                             th:text="${(song.durationSeconds / 60) + ':' + (song.durationSeconds % 60 < 10 ? '0' : '') + (song.durationSeconds % 60)}">
                             3:00</td>
-                        <td>
-                            <button class="like-btn" th:data-song-id="${song.songId}"
-                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
-                                th:classappend="${song.favorite ? 'liked' : ''}"
-                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
-                                <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
-                            </button>
-                        </td>
                         <td th:if="${playlist.userId == currentUserId}" onclick="event.stopPropagation();">
                             <form
                                 th:action="@{'/user/playlists/' + ${playlist.playlistId} + '/songs/remove/' + ${song.songId}}"
