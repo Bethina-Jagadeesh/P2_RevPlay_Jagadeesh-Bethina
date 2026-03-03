@@ -12,6 +12,10 @@ import com.rev.app.service.ISongService;
 import com.rev.app.service.IGenreService;
 import com.rev.app.service.IPodcastService;
 import com.rev.app.service.IFavoriteSongService;
+import com.rev.app.service.IListeningHistoryService;
+import com.rev.app.dto.ListeningHistoryResponseDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -25,25 +29,30 @@ import java.util.Optional;
 @RequestMapping("/artist")
 public class ArtistController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ArtistController.class);
+
     private final ISongService songService;
     private final IAlbumService albumService;
     private final IGenreService genreService;
     private final IArtistAccountRepository artistRepository;
     private final IPodcastService podcastService;
     private final IFavoriteSongService favoriteSongService;
+    private final IListeningHistoryService historyService;
 
     public ArtistController(ISongService songService,
             IAlbumService albumService,
             IGenreService genreService,
             IArtistAccountRepository artistRepository,
             IPodcastService podcastService,
-            IFavoriteSongService favoriteSongService) {
+            IFavoriteSongService favoriteSongService,
+            IListeningHistoryService historyService) {
         this.songService = songService;
         this.albumService = albumService;
         this.genreService = genreService;
         this.artistRepository = artistRepository;
         this.podcastService = podcastService;
         this.favoriteSongService = favoriteSongService;
+        this.historyService = historyService;
     }
 
     private Optional<ArtistAccount> currentArtist(UserDetails userDetails) {
@@ -57,12 +66,28 @@ public class ArtistController {
 
         if (artistOpt.isPresent()) {
             ArtistAccount artist = artistOpt.get();
-            List<SongResponseDto> songs = songService.getSongsByArtistId(artist.getArtistId());
-            int totalPlays = songs.stream().mapToInt(SongResponseDto::getPlayCount).sum();
-            model.addAttribute("songs", songs);
+            List<SongResponseDto> artistSongs = songService.getSongsByArtistId(artist.getArtistId());
+
+            // Fetch Top Songs (10 most listened to)
+            List<SongResponseDto> topSongs = artistSongs.stream()
+                    .sorted((s1, s2) -> Integer.compare(s2.getPlayCount(), s1.getPlayCount()))
+                    .limit(10)
+                    .collect(java.util.stream.Collectors.toList());
+
+            // Fetch Recent History
+            List<ListeningHistoryResponseDto> history = historyService.getHistoryByUser(artist.getArtistId());
+            List<SongResponseDto> recentPlayed = history.stream()
+                    .map(h -> songService.getSongById(h.getSongId()))
+                    .filter(java.util.Objects::nonNull)
+                    .distinct() // Show unique songs
+                    .limit(8)
+                    .collect(java.util.stream.Collectors.toList());
+
+            model.addAttribute("topSongs", topSongs);
+            model.addAttribute("recentPlayed", recentPlayed);
             model.addAttribute("artist", artist);
-            model.addAttribute("totalSongs", songs.size());
-            model.addAttribute("totalPlays", totalPlays);
+            model.addAttribute("name", artist.getStageName());
+            model.addAttribute("profileImageUrl", artist.getProfileImageUrl());
             model.addAttribute("isArtist", true);
         }
 
@@ -120,6 +145,7 @@ public class ArtistController {
             if (request.getGenreId() <= 0)
                 request.setGenreId(1);
             songService.createSong(request);
+            logger.info("Artist {} uploaded song: {}", artist.getStageName(), request.getTitle());
         }
         return "redirect:/artist/dashboard?uploaded=true";
     }
@@ -127,6 +153,7 @@ public class ArtistController {
     @PostMapping("/songs/{id}/delete")
     public String deleteSong(@PathVariable int id) {
         songService.deleteSong(id);
+        logger.info("Song deleted by artist, ID: {}", id);
         return "redirect:/artist/dashboard?deleted=true";
     }
 
@@ -152,6 +179,7 @@ public class ArtistController {
         artistOpt.ifPresent(artist -> {
             request.setArtistId(artist.getArtistId());
             albumService.createAlbum(request);
+            logger.info("Artist {} created album: {}", artist.getStageName(), request.getTitle());
         });
         return "redirect:/artist/albums?created=true";
     }

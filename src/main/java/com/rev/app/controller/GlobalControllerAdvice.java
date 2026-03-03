@@ -66,4 +66,25 @@ public class GlobalControllerAdvice {
         }
         return null;
     }
+
+    @ModelAttribute("name")
+    public String name() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UserDetails) {
+            String email = ((UserDetails) auth.getPrincipal()).getUsername();
+
+            // Check artist first
+            Optional<ArtistAccount> artist = artistRepository.findByEmail(email);
+            if (artist.isPresent()) {
+                return artist.get().getStageName();
+            }
+
+            // Then check user
+            Optional<UserAccount> user = userRepository.findByEmail(email);
+            if (user.isPresent()) {
+                return user.get().getFullName();
+            }
+        }
+        return null;
+    }
 }

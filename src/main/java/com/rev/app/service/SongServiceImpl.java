@@ -11,12 +11,16 @@ import com.rev.app.repository.ISongRepository;
 import com.rev.app.repository.IFavoriteSongRepository;
 import com.rev.app.repository.IListeningHistoryRepository;
 import com.rev.app.repository.IPlaylistSongRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class SongServiceImpl implements ISongService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SongServiceImpl.class);
 
     private final ISongRepository songRepository;
     private final IAlbumRepository albumRepository;
@@ -70,6 +74,7 @@ public class SongServiceImpl implements ISongService {
         Song song = songMapper.toEntity(requestDto);
         song = songRepository.save(song);
         populateNames(song);
+        logger.info("New song created: {} (ID: {})", song.getTitle(), song.getSongId());
         return songMapper.toResponseDto(song);
     }
 
@@ -117,6 +122,7 @@ public class SongServiceImpl implements ISongService {
 
     @Override
     public List<SongResponseDto> searchSongs(String keyword) {
+        logger.debug("Searching songs with keyword: {}", keyword);
         return songRepository.findByTitleContainingIgnoreCase(keyword).stream()
                 .peek(this::populateNames)
                 .map(songMapper::toResponseDto)
@@ -146,8 +152,10 @@ public class SongServiceImpl implements ISongService {
                 existingSong.setDurationSeconds(requestDto.getDurationSeconds());
             songRepository.save(existingSong);
             populateNames(existingSong);
+            logger.info("Song updated: {} (ID: {})", existingSong.getTitle(), existingSong.getSongId());
             return songMapper.toResponseDto(existingSong);
         }
+        logger.warn("Update failed: Song with ID {} not found.", id);
         return null;
     }
 
@@ -157,6 +165,7 @@ public class SongServiceImpl implements ISongService {
         listeningHistoryRepository.deleteBySongId(id);
         playlistSongRepository.deleteBySongId(id);
         songRepository.deleteById(id);
+        logger.info("Song deleted: ID {}", id);
     }
 
     @Override
@@ -164,6 +173,7 @@ public class SongServiceImpl implements ISongService {
         songRepository.findById(songId).ifPresent(song -> {
             song.setPlayCount(song.getPlayCount() + 1);
             songRepository.save(song);
+            logger.debug("Playback incremented for song: {} (New count: {})", song.getTitle(), song.getPlayCount());
         });
     }
 }

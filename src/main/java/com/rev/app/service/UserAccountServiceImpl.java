@@ -5,12 +5,16 @@ import com.rev.app.dto.UserAccountResponseDto;
 import com.rev.app.entity.UserAccount;
 import com.rev.app.mapper.UserAccountMapper;
 import com.rev.app.repository.IUserAccountRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UserAccountServiceImpl implements IUserAccountService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserAccountServiceImpl.class);
 
     private final IUserAccountRepository userRepository;
     private final UserAccountMapper userAccountMapper;
@@ -26,13 +30,19 @@ public class UserAccountServiceImpl implements IUserAccountService {
 
     @Override
     public UserAccountResponseDto createUser(UserAccountRequestDto requestDto) {
+        if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
+            logger.warn("Creation failed: User with email {} already exists.", requestDto.getEmail());
+            throw new RuntimeException("Email already exists");
+        }
         UserAccount user = userAccountMapper.toEntity(requestDto);
         user.setPasswordHash(passwordEncoder.encode(requestDto.getPassword()));
+        user.setCreatedAt(java.time.LocalDateTime.now());
         if (requestDto.getSecurityAnswer() != null && !requestDto.getSecurityAnswer().isBlank()) {
             user.setSecurityQuestion(requestDto.getSecurityQuestion());
             user.setSecurityAnswerHash(passwordEncoder.encode(requestDto.getSecurityAnswer()));
         }
         user = userRepository.save(user);
+        logger.info("Successfully created listener account for email: {}", user.getEmail());
         return userAccountMapper.toResponseDto(user);
     }
 

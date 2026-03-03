@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 @Service
 public class ArtistAccountServiceImpl implements IArtistAccountService {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtistAccountServiceImpl.class);
+
     private final IArtistAccountRepository artistRepository;
     private final ArtistAccountMapper artistAccountMapper;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
@@ -27,8 +29,13 @@ public class ArtistAccountServiceImpl implements IArtistAccountService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public ArtistAccountResponseDto createArtist(ArtistAccountRequestDto requestDto) {
+        if (artistRepository.findByEmail(requestDto.getEmail()).isPresent()) {
+            logger.warn("Artist registration failed: {} already exists.", requestDto.getEmail());
+            throw new RuntimeException("Email already exists");
+        }
         ArtistAccount artist = artistAccountMapper.toEntity(requestDto);
         artist.setPasswordHash(passwordEncoder.encode(requestDto.getPassword()));
+        artist.setCreatedAt(java.time.LocalDateTime.now());
 
         if (requestDto.getSecurityAnswer() != null && !requestDto.getSecurityAnswer().isBlank()) {
             artist.setSecurityQuestion(requestDto.getSecurityQuestion());
@@ -36,6 +43,7 @@ public class ArtistAccountServiceImpl implements IArtistAccountService {
         }
 
         artist = artistRepository.save(artist);
+        logger.info("Successfully registered artist: {}", artist.getStageName());
         return artistAccountMapper.toResponseDto(artist);
     }
 

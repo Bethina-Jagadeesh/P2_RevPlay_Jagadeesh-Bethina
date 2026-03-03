@@ -8,6 +8,8 @@ import com.rev.app.repository.IArtistAccountRepository;
 import com.rev.app.repository.IUserAccountRepository;
 import com.rev.app.service.IArtistAccountService;
 import com.rev.app.service.IUserAccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,8 @@ import java.util.Optional;
 
 @Controller
 public class HomeController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     private final IUserAccountService userService;
     private final IArtistAccountService artistService;
@@ -78,9 +82,18 @@ public class HomeController {
     }
 
     @PostMapping("/register/listener")
-    public String processRegisterListener(@ModelAttribute UserAccountRequestDto request) {
-        userService.createUser(request);
-        return "redirect:/?registered=true";
+    public String processRegisterListener(@ModelAttribute UserAccountRequestDto request, Model model) {
+        logger.info("Processing listener registration for email: {}", request.getEmail());
+        try {
+            userService.createUser(request);
+            logger.info("Listener registration successful: {}", request.getEmail());
+            return "redirect:/?registered=true";
+        } catch (Exception e) {
+            logger.error("Listener registration failed for {}: {}", request.getEmail(), e.getMessage());
+            model.addAttribute("error", "Registration failed: " + e.getMessage());
+            model.addAttribute("title", "RevPlay - Listener Registration");
+            return "listener/register";
+        }
     }
 
     @GetMapping("/register/artist")
@@ -90,9 +103,18 @@ public class HomeController {
     }
 
     @PostMapping("/register/artist")
-    public String processRegisterArtist(@ModelAttribute ArtistAccountRequestDto request) {
-        artistService.createArtist(request);
-        return "redirect:/?registered=true";
+    public String processRegisterArtist(@ModelAttribute ArtistAccountRequestDto request, Model model) {
+        logger.info("Processing artist registration for email: {}", request.getEmail());
+        try {
+            artistService.createArtist(request);
+            logger.info("Artist registration successful: {}", request.getEmail());
+            return "redirect:/?registered=true";
+        } catch (Exception e) {
+            logger.error("Artist registration failed for {}: {}", request.getEmail(), e.getMessage());
+            model.addAttribute("error", "Registration failed: " + e.getMessage());
+            model.addAttribute("title", "RevPlay - Artist Registration");
+            return "artist/register";
+        }
     }
 
     @GetMapping("/forgot-password/listener")
@@ -165,6 +187,7 @@ public class HomeController {
         UserAccount user = userOpt.get();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        logger.info("Password successfully reset for listener email: {}", email);
         return "redirect:/login?reset=true";
     }
 
@@ -239,6 +262,7 @@ public class HomeController {
         ArtistAccount artist = artistOpt.get();
         artist.setPasswordHash(passwordEncoder.encode(newPassword));
         artistRepository.save(artist);
+        logger.info("Password successfully reset for artist email: {}", email);
         return "redirect:/login/artist?reset=true";
     }
 

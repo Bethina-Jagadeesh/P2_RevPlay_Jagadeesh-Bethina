@@ -5,6 +5,8 @@ import com.rev.app.entity.ArtistAccount;
 import com.rev.app.entity.UserAccount;
 import com.rev.app.repository.IUserAccountRepository;
 import com.rev.app.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,8 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/user")
 public class UserController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final ISongService songService;
     private final IFavoriteSongService favoriteSongService;
@@ -76,15 +80,39 @@ public class UserController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        List<SongResponseDto> songs = songService.getAllSongs();
+        List<SongResponseDto> allSongs = songService.getAllSongs();
         int userId = resolveUserId(userDetails);
-        markFavorites(songs, userId);
+        markFavorites(allSongs, userId);
+
+        // Fetch Top Songs (Top 5 by play count)
+        List<SongResponseDto> topSongs = allSongs.stream()
+                .sorted((s1, s2) -> Integer.compare(s2.getPlayCount(), s1.getPlayCount()))
+                .limit(5)
+                .collect(java.util.stream.Collectors.toList());
+
+        // Fetch Recently Played (Last 5 unique)
+        List<ListeningHistoryResponseDto> history = historyService.getHistoryByUser(userId);
+        List<SongResponseDto> recentPlayed = history.stream()
+                .map(h -> songService.getSongById(h.getSongId()))
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .limit(5)
+                .collect(java.util.stream.Collectors.toList());
+        markFavorites(recentPlayed, userId);
+
         boolean isArtist = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
-        model.addAttribute("songs", songs);
+
+        String email = userDetails.getUsername();
+        UserAccountResponseDto user = userService.getUserByEmail(email);
+
+        model.addAttribute("topSongs", topSongs);
+        model.addAttribute("recentPlayed", recentPlayed);
         model.addAttribute("isArtist", isArtist);
         model.addAttribute("title", "RevPlay - Dashboard");
-        model.addAttribute("email", userDetails.getUsername());
+        model.addAttribute("email", email);
+        model.addAttribute("name", user != null ? user.getFullName() : null);
+        model.addAttribute("profileImageUrl", user != null ? user.getProfileImageUrl() : null);
         return "dashboard/home";
     }
 
@@ -155,6 +183,7 @@ public class UserController {
         int userId = resolveUserId(userDetails);
         FavoriteSongRequestDto dto = new FavoriteSongRequestDto(userId, songId);
         favoriteSongService.addFavorite(dto);
+        logger.info("User {} added song {} to favorites.", userDetails.getUsername(), songId);
         return "redirect:" + referer;
     }
 
@@ -183,6 +212,7 @@ public class UserController {
     public SongResponseDto playSong(@PathVariable int songId,
             @AuthenticationPrincipal UserDetails userDetails) {
         int userId = resolveUserId(userDetails);
+        logger.debug("User {} started playing song ID: {}", userDetails.getUsername(), songId);
         songService.incrementPlayCount(songId);
         ListeningHistoryRequestDto historyDto = new ListeningHistoryRequestDto(userId, songId, "play");
         historyService.recordHistory(historyDto);
@@ -239,6 +269,7 @@ public class UserController {
         int userId = resolveUserId(userDetails);
         request.setUserId(userId);
         playlistService.createPlaylist(request);
+        logger.info("Playlist '{}' created by user {}", request.getName(), userDetails.getUsername());
         return "redirect:/user/playlists?created=true";
     }
 
