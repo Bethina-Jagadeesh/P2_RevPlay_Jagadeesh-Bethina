@@ -11,18 +11,25 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final CustomAuthenticationSuccessHandler successHandler;
+        private final CustomAuthenticationFailureHandler failureHandler;
 
-        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                        @Lazy CustomAuthenticationSuccessHandler successHandler,
+                        @Lazy CustomAuthenticationFailureHandler failureHandler) {
                 this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                this.successHandler = successHandler;
+                this.failureHandler = failureHandler;
         }
 
         @Bean
@@ -44,7 +51,8 @@ public class SecurityConfig {
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/perform_login")
-                                                .defaultSuccessUrl("/dashboard", true)
+                                                .successHandler(successHandler)
+                                                .failureHandler(failureHandler)
                                                 .permitAll())
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
