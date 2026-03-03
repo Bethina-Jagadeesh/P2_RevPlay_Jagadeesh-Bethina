@@ -15,5 +15,9 @@ public interface IListeningHistoryRepository extends JpaRepository<ListeningHist
     void deleteByUserId(int userId);
 
     @Transactional
+    List<ListeningHistory> findBySongIdIn(List<Integer> songIds);
+
+    @Transactional
     void deleteBySongId(int songId);
+
 }

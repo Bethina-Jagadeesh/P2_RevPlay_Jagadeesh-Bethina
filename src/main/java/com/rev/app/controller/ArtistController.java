@@ -38,6 +38,7 @@ public class ArtistController {
     private final IPodcastService podcastService;
     private final IFavoriteSongService favoriteSongService;
     private final IListeningHistoryService historyService;
+    private final com.rev.app.repository.IUserAccountRepository userRepository;
 
     public ArtistController(ISongService songService,
             IAlbumService albumService,
@@ -45,7 +46,8 @@ public class ArtistController {
             IArtistAccountRepository artistRepository,
             IPodcastService podcastService,
             IFavoriteSongService favoriteSongService,
-            IListeningHistoryService historyService) {
+            IListeningHistoryService historyService,
+            com.rev.app.repository.IUserAccountRepository userRepository) {
         this.songService = songService;
         this.albumService = albumService;
         this.genreService = genreService;
@@ -53,6 +55,19 @@ public class ArtistController {
         this.podcastService = podcastService;
         this.favoriteSongService = favoriteSongService;
         this.historyService = historyService;
+        this.userRepository = userRepository;
+    }
+
+    private void markFavorites(List<com.rev.app.dto.SongResponseDto> songs, int userId) {
+        if (userId <= 0 || songs == null || songs.isEmpty())
+            return;
+        List<com.rev.app.dto.FavoriteSongResponseDto> favorites = favoriteSongService.getFavoritesByUser(userId);
+        java.util.Set<Integer> favoriteSongIds = favorites.stream()
+                .map(com.rev.app.dto.FavoriteSongResponseDto::getSongId)
+                .collect(java.util.stream.Collectors.toSet());
+        for (com.rev.app.dto.SongResponseDto song : songs) {
+            song.setFavorite(favoriteSongIds.contains(song.getSongId()));
+        }
     }
 
     private Optional<ArtistAccount> currentArtist(UserDetails userDetails) {
@@ -82,6 +97,16 @@ public class ArtistController {
                     .distinct() // Show unique songs
                     .limit(8)
                     .collect(java.util.stream.Collectors.toList());
+
+            int userId = artist.getArtistId();
+            // Check if there's a UserAccount with this email to get the correct listener ID
+            Optional<com.rev.app.entity.UserAccount> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                userId = userOpt.get().getUserId();
+            }
+
+            markFavorites(topSongs, userId);
+            markFavorites(recentPlayed, userId);
 
             model.addAttribute("topSongs", topSongs);
             model.addAttribute("recentPlayed", recentPlayed);
@@ -140,8 +165,11 @@ public class ArtistController {
                 }
             }
 
-            if (request.getDurationSeconds() <= 0)
-                request.setDurationSeconds(180);
+            if (request.getDurationSeconds() <= 0 && !songFile.isEmpty()) {
+                // Approximate 128kbps (16000 bytes per second)
+                int dur = (int) (songFile.getSize() / 16000);
+                request.setDurationSeconds(Math.max(1, dur));
+            }
             if (request.getGenreId() <= 0)
                 request.setGenreId(1);
             songService.createSong(request);
@@ -193,6 +221,18 @@ public class ArtistController {
     @GetMapping("/albums/{id}/songs")
     public String albumSongs(@PathVariable int id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         List<SongResponseDto> songs = songService.getSongsByAlbumId(id);
+        int userId = -1;
+        Optional<com.rev.app.entity.UserAccount> userOpt = userRepository.findByEmail(userDetails.getUsername());
+        if (userOpt.isPresent()) {
+            userId = userOpt.get().getUserId();
+        } else {
+            artistRepository.findByEmail(userDetails.getUsername()).ifPresent(a -> {
+                // Not the best practice but consistent with resolveUserId pattern
+            });
+            // We can assume userOpt is usually present for login, or just use -1
+        }
+        markFavorites(songs, userId);
+
         model.addAttribute("songs", songs);
         model.addAttribute("albumId", id);
         model.addAttribute("isArtist", true);
@@ -203,10 +243,18 @@ public class ArtistController {
 
     @GetMapping("/analytics")
     public String analytics(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
         Optional<ArtistAccount> artistOpt = currentArtist(userDetails);
         if (artistOpt.isPresent()) {
             ArtistAccount artist = artistOpt.get();
             List<SongResponseDto> songs = songService.getSongsByArtistId(artist.getArtistId());
+
+            int userId = artist.getArtistId();
+            Optional<com.rev.app.entity.UserAccount> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                userId = userOpt.get().getUserId();
+            }
+            markFavorites(songs, userId);
             int totalPlays = songs.stream().mapToInt(SongResponseDto::getPlayCount).sum();
 
             List<Integer> songIds = songs.stream().map(SongResponseDto::getSongId).toList();
@@ -216,8 +264,19 @@ public class ArtistController {
                     .sorted((a, b) -> b.getPlayCount() - a.getPlayCount())
                     .limit(10)
                     .toList();
+
+            List<com.rev.app.dto.UserAccountResponseDto> favoritedBy = favoriteSongService
+                    .getUsersWhoFavoritedSongs(songIds);
+            java.util.Map<java.time.LocalDate, com.rev.app.dto.DailyTrendDto> trends = historyService
+                    .getListeningTrends(songIds);
+            List<com.rev.app.dto.UserPlayCountDto> topListeners = historyService.getTopListeners(songIds);
+
             model.addAttribute("songs", songs);
             model.addAttribute("topSongs", topSongs);
+            model.addAttribute("favoritedBy", favoritedBy);
+            model.addAttribute("trends", trends);
+            model.addAttribute("topListeners", topListeners);
+
             model.addAttribute("totalSongs", songs.size());
             model.addAttribute("totalPlays", totalPlays);
             model.addAttribute("totalFavorites", totalFavorites);

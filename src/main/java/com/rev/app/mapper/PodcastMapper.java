@@ -47,6 +47,7 @@ public class PodcastMapper {
                 .description(entity.getDescription())
                 .fileUrl(entity.getFileUrl())
                 .artistId(entity.getArtistId())
+                .playCount(entity.getPlayCount() != null ? entity.getPlayCount() : 0)
                 .coverImageUrl(coverImage)
                 .createdAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null)
                 .build();

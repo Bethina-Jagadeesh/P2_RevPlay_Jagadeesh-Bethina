@@ -25,7 +25,7 @@ public class SongResponseDto {
     private LocalDate releaseDate;
 
     private String fileUrl;
-    private int playCount;
+    private Integer playCount;
     private String isActive;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")

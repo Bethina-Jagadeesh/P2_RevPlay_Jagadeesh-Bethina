@@ -39,8 +39,8 @@ public class Song {
     @Column(name = "file_url")
     private String fileUrl;
 
-    @Column(name = "play_count")
-    private int playCount;
+    @Column(name = "play_count", columnDefinition = "integer default 0")
+    private Integer playCount;
 
     @Column(name = "is_active")
     private String isActive;

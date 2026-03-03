@@ -48,8 +48,10 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponseDto(jwt, userDetails.getUsername(), "Login Successful"));
 
         } catch (Exception e) {
+            System.err.println("Login failed for email: " + request.getEmail());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponseDto(null, request.getEmail(), "Authentication failed"));
+                    .body(new AuthResponseDto(null, request.getEmail(), "Authentication failed: " + e.getMessage()));
         }
     }
 

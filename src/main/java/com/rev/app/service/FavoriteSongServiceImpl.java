@@ -5,6 +5,10 @@ import com.rev.app.dto.FavoriteSongResponseDto;
 import com.rev.app.entity.FavoriteSong;
 import com.rev.app.mapper.FavoriteSongMapper;
 import com.rev.app.repository.IFavoriteSongRepository;
+import com.rev.app.repository.IUserAccountRepository;
+import com.rev.app.mapper.UserAccountMapper;
+import com.rev.app.dto.UserAccountResponseDto;
+
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,11 +18,17 @@ public class FavoriteSongServiceImpl implements IFavoriteSongService {
 
     private final IFavoriteSongRepository favoriteSongRepository;
     private final FavoriteSongMapper favoriteSongMapper;
+    private final IUserAccountRepository userRepository;
+    private final UserAccountMapper userMapper;
 
     public FavoriteSongServiceImpl(IFavoriteSongRepository favoriteSongRepository,
-            FavoriteSongMapper favoriteSongMapper) {
+            FavoriteSongMapper favoriteSongMapper,
+            IUserAccountRepository userRepository,
+            UserAccountMapper userMapper) {
         this.favoriteSongRepository = favoriteSongRepository;
         this.favoriteSongMapper = favoriteSongMapper;
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -73,5 +83,19 @@ public class FavoriteSongServiceImpl implements IFavoriteSongService {
             return 0;
         }
         return favoriteSongRepository.countBySongIdIn(songIds);
+    }
+
+    @Override
+    public List<UserAccountResponseDto> getUsersWhoFavoritedSongs(List<Integer> songIds) {
+        if (songIds == null || songIds.isEmpty())
+            return List.of();
+        List<Integer> userIds = favoriteSongRepository.findBySongIdIn(songIds)
+                .stream()
+                .map(FavoriteSong::getUserId)
+                .distinct()
+                .collect(Collectors.toList());
+        return userRepository.findByUserIdIn(userIds).stream()
+                .map(userMapper::toResponseDto)
+                .collect(Collectors.toList());
     }
 }

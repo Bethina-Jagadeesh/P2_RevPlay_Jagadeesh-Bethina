@@ -17,4 +17,7 @@ public interface IFavoriteSongService {
     boolean toggleFavorite(int userId, int songId);
 
     long getFavoriteCountForSongs(List<Integer> songIds);
+
+    List<com.rev.app.dto.UserAccountResponseDto> getUsersWhoFavoritedSongs(List<Integer> songIds);
+
 }

@@ -42,8 +42,9 @@ public class SecurityConfig {
                                                                 "/api/auth/**", "/css/**", "/js/**", "/uploads/**",
                                                                 "/error")
                                                 .permitAll()
-                                                .requestMatchers("/dashboard/**", "/artist/**", "/user/**", "/songs/**",
-                                                                "/albums/**", "/artists/**", "/genres/**")
+                                                .requestMatchers("/dashboard/**", "/artist/**", "/user/**",
+                                                                "/api/songs/**", "/api/albums/**", "/api/artists/**",
+                                                                "/api/playlists/**", "/api/users/**")
                                                 .authenticated()
                                                 .anyRequest().authenticated())
                                 .sessionManagement(session -> session

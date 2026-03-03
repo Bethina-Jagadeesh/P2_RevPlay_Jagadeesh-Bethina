@@ -35,7 +35,7 @@ public class SongMapper {
                 .durationSeconds(entity.getDurationSeconds())
                 .releaseDate(entity.getReleaseDate())
                 .fileUrl(entity.getFileUrl())
-                .playCount(entity.getPlayCount())
+                .playCount(entity.getPlayCount() != null ? entity.getPlayCount() : 0)
                 .isActive(entity.getIsActive())
                 .createdAt(entity.getCreatedAt())
                 .genreName(entity.getGenreName())

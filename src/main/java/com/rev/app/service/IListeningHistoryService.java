@@ -10,4 +10,10 @@ public interface IListeningHistoryService {
     List<ListeningHistoryResponseDto> getHistoryByUser(int userId);
 
     void clearHistory(int userId);
+
+    java.util.Map<java.time.LocalDate, com.rev.app.dto.DailyTrendDto> getListeningTrends(
+            java.util.List<Integer> songIds);
+
+    java.util.List<com.rev.app.dto.UserPlayCountDto> getTopListeners(java.util.List<Integer> songIds);
+
 }

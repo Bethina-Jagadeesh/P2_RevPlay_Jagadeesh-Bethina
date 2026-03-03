@@ -18,5 +18,6 @@ public class PodcastResponseDto {
     private String fileUrl;
     private int artistId;
     private String coverImageUrl;
+    private Integer playCount;
     private String createdAt;
 }

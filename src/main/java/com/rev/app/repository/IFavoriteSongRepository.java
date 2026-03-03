@@ -18,6 +18,8 @@ public interface IFavoriteSongRepository extends JpaRepository<FavoriteSong, Fav
 
     long countBySongIdIn(List<Integer> songIds);
 
+    List<FavoriteSong> findBySongIdIn(List<Integer> songIds);
+
     @Transactional
     void deleteBySongId(int songId);
 }
