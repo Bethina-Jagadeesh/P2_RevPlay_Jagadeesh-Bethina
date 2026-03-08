@@ -2,8 +2,8 @@ package com.rev.app.repository;
 
 import com.rev.app.entity.PlaylistSong;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -13,4 +13,7 @@ public interface IPlaylistSongRepository extends JpaRepository<PlaylistSong, Pla
 
     @Transactional
     void deleteByPlaylistIdAndSongId(int playlistId, int songId);
+
+    @Transactional
+    void deleteBySongId(int songId);
 }

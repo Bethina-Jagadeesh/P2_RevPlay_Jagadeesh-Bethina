@@ -12,14 +12,4 @@ import java.util.Optional;
 @Repository
 public interface IArtistAccountRepository extends JpaRepository<ArtistAccount, Integer> {
     Optional<ArtistAccount> findByEmail(String email);
-
-    @Query(value = "SELECT security_question FROM artist_account WHERE email = :email", nativeQuery = true)
-    String findSecurityQuestionByEmail(@Param("email") String email);
-
-    @Query(value = "SELECT security_answer_hash FROM artist_account WHERE email = :email", nativeQuery = true)
-    String findSecurityAnswerHashByEmail(@Param("email") String email);
-
-    @Modifying
-    @Query(value = "UPDATE artist_account SET security_question = :q, security_answer_hash = :a WHERE artist_id = :id", nativeQuery = true)
-    void saveSecurityInfo(@Param("id") int artistId, @Param("q") String question, @Param("a") String answerHash);
 }

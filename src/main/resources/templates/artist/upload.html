@@ -1,0 +1,157 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Upload Music', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .upload-container {
+                background: #181818;
+                padding: 40px;
+                border-radius: 12px;
+                width: 100%;
+                max-width: 700px;
+                border: 1px solid #282828;
+                margin: 0 auto;
+            }
+
+            h2 {
+                color: #1DB954;
+                margin-bottom: 10px;
+                font-size: 1.5em;
+            }
+
+            .sub {
+                color: #b3b3b3;
+                font-size: 0.85em;
+                margin-bottom: 28px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            label {
+                display: block;
+                color: #b3b3b3;
+                margin-bottom: 8px;
+                font-size: 0.85em;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            input,
+            select {
+                width: 100%;
+                padding: 12px 14px;
+                border-radius: 8px;
+                border: 1px solid #333;
+                background: #282828;
+                color: white;
+                font-size: 0.95em;
+            }
+
+            input:focus,
+            select:focus {
+                outline: 1px solid #1DB954;
+            }
+
+            .form-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            .btn-submit {
+                background: #1DB954;
+                color: white;
+                border: none;
+                padding: 14px 40px;
+                border-radius: 50px;
+                font-weight: bold;
+                font-size: 1em;
+                cursor: pointer;
+                margin-top: 24px;
+                width: 100%;
+            }
+
+            .btn-submit:hover {
+                background: #1ed760;
+            }
+
+            .section-label {
+                font-size: 0.75rem;
+                color: var(--primary);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin: 24px 0 12px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 6px;
+            }
+
+            .hint {
+                font-size: 0.75rem;
+                color: var(--text-sub);
+                margin-top: 4px;
+            }
+
+            /* Hide global search bar only on this page */
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+
+        <div class="upload-container">
+            <h2>⬆ Upload Your Track</h2>
+            <p class="sub">Share your music with the world. Fill in the details below.</p>
+
+            <div class="success-msg" th:if="${param.uploaded}"
+                style="background: #1a3a1a; color: #1DB954; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9em;">
+                ✅ Song uploaded successfully!</div>
+
+            <form th:action="@{/artist/upload}" method="POST" enctype="multipart/form-data">
+                <p class="section-label">Song Details</p>
+                <div class="form-group">
+                    <label>Song Title *</label>
+                    <input type="text" name="title" placeholder="e.g. Bohemian Rhapsody" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Audio File *</label>
+                    <input type="file" name="songFile" accept="audio/*" required>
+                    <p class="hint">Select an MP3 or WAV file from your system.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="genreId">Genre *</label>
+                    <select id="genreId" name="genreId" required>
+                        <option value="">-- Select Genre --</option>
+                        <option th:each="genre : ${genres}" th:value="${genre.genreId}" th:text="${genre.genreName}">
+                            Genre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="albumId">Album (Optional)</label>
+                    <select id="albumId" name="albumId">
+                        <option value="">Single (No Album)</option>
+                        <option th:each="album : ${albums}" th:value="${album.albumId}" th:text="${album.title}">Album
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="releaseDate">Release Date</label>
+                    <input type="date" id="releaseDate" name="releaseDate">
+                </div>
+
+                <button type="submit" class="btn-submit">🎵 PUBLISH SONG</button>
+            </form>
+        </div>
+        <div style="height: 100px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+    </div>
+</body>
+
+</html>

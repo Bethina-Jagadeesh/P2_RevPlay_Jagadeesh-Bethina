@@ -1,0 +1,145 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Browse Podcasts', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .podcast-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 24px;
+                margin-top: 20px;
+            }
+
+            .podcast-card {
+                background: #181818;
+                padding: 16px;
+                border-radius: 8px;
+                transition: background 0.3s ease;
+                cursor: pointer;
+                text-decoration: none;
+                color: white;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                border: 1px solid transparent;
+            }
+
+            .podcast-card:hover {
+                background: #282828;
+                border-color: #1DB954;
+            }
+
+            .podcast-cover {
+                width: 100%;
+                aspect-ratio: 1;
+                background: linear-gradient(135deg, #282828, #121212);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 4em;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                color: #1DB954;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .podcast-info h3 {
+                font-size: 1.05em;
+                margin-bottom: 4px;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .podcast-info .host {
+                color: white;
+                font-size: 0.9em;
+                font-weight: 500;
+            }
+
+            .podcast-info .description {
+                color: #b3b3b3;
+                font-size: 0.8em;
+                margin-top: 8px;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* Hide global search bar only on this page */
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+
+        <div style="margin-bottom: 24px; margin-top: 16px;">
+            <div style="margin-bottom: 16px;">
+                <h2 style="margin-bottom: 4px;">🎙️ Discover Podcasts</h2>
+                <p style="color: #b3b3b3;">Stories, news, and more for your ears</p>
+            </div>
+            <div class="search-wrapper" style="max-width: 300px; margin-bottom: 0;">
+                <input type="text" id="podcastSearch" placeholder="Filter podcasts..."
+                    onkeyup="filterItems('podcastSearch', 'podcast-card')">
+            </div>
+        </div>
+
+        <div class="podcast-grid">
+            <div th:each="podcast : ${podcasts}" class="podcast-card"
+                th:onclick="'playPodcast(' + ${podcast.podcastId} + ')'">
+                <div class="podcast-cover">
+                    <img th:if="${podcast.coverImageUrl != null && !podcast.coverImageUrl.isEmpty()}"
+                        th:src="${podcast.coverImageUrl}" alt=""
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"
+                        onerror="this.outerHTML='🎙️'">
+                    <span th:if="${podcast.coverImageUrl == null || podcast.coverImageUrl.isEmpty()}">🎙️</span>
+                </div>
+                <div class="podcast-info">
+                    <h3 class="item-title" th:text="${podcast.title}">Podcast Title</h3>
+                    <p class="host"
+                        th:text="${podcast.hostName != null ? 'Host ID: ' + podcast.hostName : 'Host ID: ' + podcast.artistId}">
+                        Host Name</p>
+                    <p class="description" th:text="${podcast.description}">Podcast description goes here...</p>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(podcasts)}" class="empty-state"
+                style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                <p style="font-size: 3em;">📻</p>
+                <p style="margin-top: 16px; color: #b3b3b3;">No podcasts found.</p>
+            </div>
+        </div>
+        <div style="height: 120px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script th:inline="javascript">
+            window.pagePodcasts = /*[[${podcasts}]]*/[];
+        </script>
+        <script>
+            function filterItems(inputId, cardClass) {
+                const input = document.getElementById(inputId);
+                const filter = input.value.toUpperCase();
+                const cards = document.getElementsByClassName(cardClass);
+
+                for (let i = 0; i < cards.length; i++) {
+                    const titleElement = cards[i].querySelector('.item-title');
+                    if (titleElement) {
+                        const title = titleElement.innerText;
+                        if (title.toUpperCase().indexOf(filter) > -1) {
+                            cards[i].style.display = "";
+                        } else {
+                            cards[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

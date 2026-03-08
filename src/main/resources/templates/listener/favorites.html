@@ -1,0 +1,149 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Favorite Songs', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+        <style>
+            .page-header {
+                background: linear-gradient(135deg, #FF4B2B, #FF416C);
+                padding: 40px;
+                border-radius: 12px;
+                margin-bottom: 30px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th {
+                text-align: left;
+                color: #b3b3b3;
+                border-bottom: 1px solid #282828;
+                padding: 10px;
+                font-size: 0.8em;
+                text-transform: uppercase;
+            }
+
+            td {
+                padding: 12px 10px;
+                border-bottom: 1px solid #1a1a1a;
+            }
+
+            tr:hover td {
+                background: #1a1a1a;
+            }
+
+            .btn-remove {
+                background: transparent;
+                border: 1px solid #ff5252;
+                color: #ff5252;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.78em;
+                cursor: pointer;
+            }
+
+            .btn-remove:hover {
+                background: #ff5252;
+                color: white;
+            }
+
+            .badge {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                padding: 3px 10px;
+                font-size: 0.8em;
+                margin-left: 10px;
+            }
+        </style>
+
+        <div class="page-header">
+            <h1 style="font-size: 3rem;">❤️ Favorite Songs <span class="badge" th:text="${#lists.size(songs)}"
+                    style="background: rgba(255,255,255,0.2); font-size: 1.5rem; vertical-align: middle;">0</span></h1>
+            <p th:text="'Your favorite tracks · ' + ${email}" style="opacity: 0.9; margin-top: 8px;"></p>
+        </div>
+
+        <table th:if="${!#lists.isEmpty(songs)}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th></th>
+                    <th>Title</th>
+                    <th>Artist</th>
+                    <th>Duration</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="song, stat : ${songs}" th:data-song-id="${song.songId}"
+                    th:onclick="'playSong(' + ${song.songId} + ')'" style="cursor: pointer;">
+                    <td style="color: #b3b3b3;" th:text="${stat.index + 1}">1</td>
+                    <td>
+                        <button class="play-btn-small" th:onclick="'playSong(' + ${song.songId} + ')'"
+                            style="background: #1DB954; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            ▶
+                        </button>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img th:if="${song.coverImageUrl != null && !song.coverImageUrl.isEmpty()}"
+                                th:src="${song.coverImageUrl}" alt="Cover"
+                                style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                            <div th:if="${song.coverImageUrl == null || song.coverImageUrl.isEmpty()}"
+                                style="width: 40px; height: 40px; border-radius: 4px; background: #282828; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                🎵</div>
+                            <div style="font-weight: 500;" th:text="${song.title}">Song Title</div>
+                        </div>
+                    </td>
+                    <td style="color: #b3b3b3;" th:text="${song.artistName}">Artist</td>
+                    <td style="color: #b3b3b3;"
+                        th:text="${(song.durationSeconds / 60) + ':' + (song.durationSeconds % 60 < 10 ? '0' : '') + (song.durationSeconds % 60)}">
+                        3:45</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button class="add-playlist-btn"
+                                th:onclick="'event.stopPropagation(); openPlaylistModal(event, ' + ${song.songId} + ')'"
+                                style="background:none; border:none; font-size:1.4rem; color: #b3b3b3; cursor:pointer;"
+                                title="Add to Playlist">
+                                <i class="fas fa-plus" style="color: #a252ff;"></i>
+                            </button>
+                            <button class="like-btn liked" th:data-song-id="${song.songId}"
+                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
+                                <span class="heart-icon">❤️</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${#lists.isEmpty(songs)}" class="empty-state" style="text-align: center; padding: 60px;">
+            <p style="font-size: 3em;">🤍</p>
+            <p style="margin-top: 16px; color: #b3b3b3;">You haven't liked any songs yet.</p>
+            <a href="/user/library" class="btn btn-primary"
+                style="margin-top: 20px; text-decoration: none; display: inline-block;">Go to Library</a>
+        </div>
+
+        <div class="empty-state" style="text-align: center; padding: 60px; display: none;">
+            <p style="font-size:3em;">💔</p>
+            <p style="margin-top:12px;">No matches found in your favorite songs.</p>
+        </div>
+        <div style="height: 100px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script th:inline="javascript">
+            window.favoriteSongs = /*[[${songs}]]*/[];
+        </script>
+    </div>
+</body>
+
+</html>

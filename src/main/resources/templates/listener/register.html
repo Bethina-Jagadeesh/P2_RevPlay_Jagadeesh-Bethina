@@ -1,0 +1,83 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/public-layout :: layout(title='Listener Registration', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content" class="auth-container">
+        <div class="auth-card" style="max-width: 500px;">
+            <a href="/" class="back"
+                style="color: var(--text-sub); font-size: 0.85rem; display: block; margin-bottom: 24px;">← Back to
+                home</a>
+            <div class="logo"
+                style="color: var(--primary); font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 8px;">
+                🎵 RevPlay</div>
+            <h2 style="text-align: center; margin-bottom: 4px;">Join as Listener 🎧</h2>
+            <p style="text-align: center; color: var(--text-sub); font-size: 0.9rem; margin-bottom: 32px;">Discover and
+                play millions of songs.</p>
+
+            <div th:if="${error}" class="alert alert-danger"
+                style="background: rgba(255, 68, 68, 0.1); color: #ff4444; padding: 12px; border-radius: 8px; margin-bottom: 24px; font-size: 0.9rem; text-align: center;">
+                <span th:text="${error}"></span>
+            </div>
+
+            <form th:action="@{/register/listener}" method="POST">
+                <!-- Basic Info -->
+                <p
+                    style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid var(--bg-elevated); padding-bottom: 6px;">
+                    Account Details</p>
+
+                <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="fullName" class="form-input" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address *</label>
+                    <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password *</label>
+                    <input type="password" name="password" class="form-input" placeholder="Create a strong password"
+                        required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone (Optional)</label>
+                    <input type="tel" name="phone" class="form-input" placeholder="+91 9876543210">
+                </div>
+
+                <!-- Security Question -->
+                <p
+                    style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; border-bottom: 1px solid var(--bg-elevated); padding-bottom: 6px;">
+                    🔒 Security (for Password Recovery)</p>
+                <div class="form-group">
+                    <label class="form-label">Security Question *</label>
+                    <select name="securityQuestion" class="form-input" required>
+                        <option value="">-- Choose a question --</option>
+                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                        <option value="What was the name of your first pet?">What was the name of your first pet?
+                        </option>
+                        <option value="What city were you born in?">What city were you born in?</option>
+                        <option value="What was your childhood nickname?">What was your childhood nickname?</option>
+                        <option value="What is the name of your primary school?">What is the name of your primary
+                            school?</option>
+                        <option value="What is your favourite movie?">What is your favourite movie?</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Security Answer *</label>
+                    <input type="text" name="securityAnswer" class="form-input"
+                        placeholder="Your answer (case sensitive)" required>
+                    <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Remember this exactly — it's
+                        used to verify your identity if you forget your password.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 24px;">SIGN UP</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 24px; font-size: 0.85rem; color: var(--text-sub);">
+                Already have an account? <a href="/login">Log in here</a>
+            </div>
+        </div>
+    </div>
+    <div th:fragment="scripts"></div>
+</body>
+
+</html>

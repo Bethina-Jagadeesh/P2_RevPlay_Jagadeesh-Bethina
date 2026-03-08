@@ -1,0 +1,125 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Browse Genres', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .genre-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 24px;
+                margin-top: 30px;
+            }
+
+            .genre-card {
+                aspect-ratio: 1 / 1;
+                border-radius: 12px;
+                padding: 20px;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+                transition: transform 0.3s cubic-bezier(0.3, 0, 0, 1);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                border: none !important;
+            }
+
+            .genre-card:hover {
+                transform: scale(1.05);
+            }
+
+            .genre-title {
+                color: white;
+                font-size: 1.5rem;
+                font-weight: 800;
+                letter-spacing: -0.5px;
+                word-wrap: break-word;
+                z-index: 2;
+            }
+
+            .genre-icon {
+                position: absolute;
+                bottom: -15px;
+                right: -10px;
+                font-size: 5rem;
+                opacity: 0.15;
+                transform: rotate(-25deg);
+                color: white;
+                transition: transform 0.3s;
+                pointer-events: none;
+            }
+
+            .genre-card:hover .genre-icon {
+                transform: rotate(-15deg) scale(1.1);
+                opacity: 0.25;
+            }
+
+            /* Search bar override */
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+
+        <div style="margin-bottom: 32px; margin-top: 16px;">
+            <div style="margin-bottom: 16px;">
+                <h2 style="margin-bottom: 4px;">📚 All Genres</h2>
+                <p style="color: #b3b3b3;">Explore music by category</p>
+            </div>
+            <div class="search-wrapper" style="max-width: 300px; margin-bottom: 0;">
+                <input type="text" id="genreSearch" placeholder="Filter genres..."
+                    onkeyup="filterItems('genreSearch', 'genre-pill')">
+            </div>
+        </div>
+
+        <div class="genre-container">
+            <a th:each="genre, stat : ${genres}" th:href="@{'/user/genres/' + ${genre.genreId} + '/songs'}"
+                class="genre-card" th:styleappend="'background-color: ' + (
+                    ${genre.genreName == 'Classical'} ? '#E91E63' : 
+                    (${genre.genreName == 'Hip-Hop'} ? '#1E3264' : 
+                    (${genre.genreName == 'Jazz'} ? '#8C1932' : 
+                    (${genre.genreName == 'Melody'} ? '#1DB954' : 
+                    (${genre.genreName == 'Pop'} ? '#D84000' : 
+                    (${genre.genreName == 'Rock'} ? '#777' : 
+                    (${stat.index % 6 == 0} ? '#E8115B' : 
+                    (${stat.index % 6 == 1} ? '#1DB954' : 
+                    (${stat.index % 6 == 2} ? '#FF9800' : 
+                    (${stat.index % 6 == 3} ? '#2722C7' : 
+                    (${stat.index % 6 == 4} ? '#B02897' : '#DC148C')))))))))))" style="text-decoration: none;">
+
+                <span class="genre-title" th:text="${genre.genreName}">Genre Name</span>
+                <i class="fas fa-guitar genre-icon"></i>
+            </a>
+
+            <div th:if="${#lists.isEmpty(genres)}" class="empty-state"
+                style="flex-basis: 100%; text-align: center; padding: 60px;">
+                <p style="font-size: 3em;">🎸</p>
+                <p style="margin-top: 16px; color: #b3b3b3;">No genres found.</p>
+            </div>
+        </div>
+
+        <!-- Songs display area -->
+        <div style="height: 120px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script th:inline="javascript">
+            function filterItems(inputId, cardClass) {
+                const input = document.getElementById(inputId);
+                const filter = input.value.toUpperCase();
+                const cards = document.querySelectorAll('.genre-card');
+
+                for (let i = 0; i < cards.length; i++) {
+                    const titleElement = cards[i].querySelector('.genre-title');
+                    if (titleElement) {
+                        const title = titleElement.innerText;
+                        cards[i].style.display = title.toUpperCase().includes(filter) ? "" : "none";
+                    }
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

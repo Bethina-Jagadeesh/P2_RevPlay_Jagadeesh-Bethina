@@ -29,6 +29,15 @@ public class Podcast {
     @Column(name = "description", length = 500)
     private String description;
 
+    @Column(name = "file_url")
+    private String fileUrl;
+
+    @Column(name = "artist_id", nullable = false)
+    private int artistId;
+
+    @Column(name = "play_count", columnDefinition = "integer default 0")
+    private Integer playCount;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

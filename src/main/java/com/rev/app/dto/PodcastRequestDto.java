@@ -14,4 +14,6 @@ public class PodcastRequestDto {
     private String hostName;
     private String category;
     private String description;
+    private String fileUrl;
+    private int artistId;
 }

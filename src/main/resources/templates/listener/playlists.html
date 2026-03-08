@@ -1,0 +1,247 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/dashboard-layout :: layout(title='Playlists', content=~{::content}, scripts=~{::scripts}, showSearch=false)}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .create-card {
+                background: #181818;
+                padding: 24px;
+                border-radius: 12px;
+                margin-bottom: 30px;
+                border: 1px dashed #282828;
+            }
+
+            .create-card h3 {
+                margin-bottom: 16px;
+                color: #1DB954;
+            }
+
+            .form-row {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                align-items: flex-end;
+            }
+
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                flex: 1;
+                min-width: 160px;
+            }
+
+            label {
+                font-size: 0.8em;
+                color: #b3b3b3;
+            }
+
+            input[type="text"],
+            select {
+                background: #282828;
+                border: 1px solid #383838;
+                color: white;
+                padding: 10px 14px;
+                border-radius: 8px;
+                font-size: 0.9em;
+                width: 100%;
+            }
+
+            input:focus,
+            select:focus {
+                outline: 1px solid #1DB954;
+            }
+
+            .btn-primary {
+                background: #1DB954;
+                color: white;
+                border: none;
+                padding: 11px 22px;
+                border-radius: 24px;
+                font-size: 0.9em;
+                font-weight: bold;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+
+            .btn-primary:hover {
+                background: #1ed760;
+            }
+
+            .btn-danger {
+                background: transparent;
+                border: 1px solid #ff5252;
+                color: #ff5252;
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 0.78em;
+                cursor: pointer;
+            }
+
+            .btn-danger:hover {
+                background: #ff5252;
+                color: white;
+            }
+
+            .playlist-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 20px;
+            }
+
+            .playlist-card {
+                background: #181818;
+                padding: 20px;
+                border-radius: 10px;
+                border: 1px solid #282828;
+                transition: border-color 0.2s;
+            }
+
+            .playlist-card:hover {
+                border-color: #1DB954;
+            }
+
+            .playlist-icon {
+                font-size: 2.5em;
+                margin-bottom: 12px;
+            }
+
+            .playlist-card h3 {
+                font-size: 1em;
+                margin-bottom: 4px;
+            }
+
+            .playlist-card p {
+                color: #b3b3b3;
+                font-size: 0.8em;
+                margin-bottom: 12px;
+            }
+
+            .playlist-card .actions {
+                display: flex;
+                gap: 8px;
+            }
+
+            .btn-view {
+                background: #1DB954;
+                color: white;
+                text-decoration: none;
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 0.8em;
+            }
+
+            .privacy-badge {
+                padding: 2px 8px;
+                border-radius: 10px;
+                font-size: 0.72em;
+            }
+
+            .privacy-badge.public {
+                background: #1a5c2a;
+                color: #1DB954;
+            }
+
+            .privacy-badge.private {
+                background: #3a2a00;
+                color: #f0a500;
+            }
+
+            .badge {
+                background: #282828;
+                border-radius: 10px;
+                padding: 2px 8px;
+                font-size: 0.75em;
+                margin-left: 5px;
+            }
+
+            .top-bar .search-wrapper {
+                display: none;
+            }
+        </style>
+
+        <h1>My Playlists <span class="badge" th:text="${#lists.size(playlists)}">0</span></h1>
+        <p class="sub" th:text="'Logged in as: ' + ${email}"
+            style="color: #b3b3b3; margin-bottom: 25px; font-size: 0.9em;"></p>
+
+        <div class="success-msg" th:if="${param.created}"
+            style="background: #1a3a1a; color: #1DB954; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9em;">
+            ✅ Playlist created successfully!</div>
+        <div class="success-msg" th:if="${param.deleted}"
+            style="background:#3a1a1a; color:#ff5252; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9em;">
+            🗑 Playlist deleted.</div>
+
+        <div class="create-card" id="createPlaylistForm">
+            <h3>➕ Create New Playlist</h3>
+            <form th:action="@{/user/playlists/create}" method="post">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Playlist Name *</label>
+                        <input type="text" id="playlist_name_input" name="name" placeholder="My Awesome Playlist"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" placeholder="Optional description">
+                    </div>
+                    <div class="form-group" style="max-width:140px;">
+                        <label for="privacyStatus">Privacy</label>
+                        <select id="privacyStatus" name="privacyStatus">
+                            <option value="public">🌍 Public</option>
+                            <option value="private">🔒 Private</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="playlist-grid" th:if="${!#lists.isEmpty(playlists)}">
+            <div class="playlist-card" th:each="playlist : ${playlists}">
+                <div class="playlist-icon"><i class="fas fa-compact-disc" style="color: #1DB954;"></i></div>
+                <h3 th:text="${playlist.name}">Playlist Name</h3>
+                <p
+                    th:text="${playlist.description != null && !playlist.description.isEmpty() ? playlist.description : 'No description'}">
+                    Description</p>
+                <p>
+                    <span
+                        th:class="${playlist.privacyStatus == 'public' ? 'privacy-badge public' : 'privacy-badge private'}"
+                        th:text="${playlist.privacyStatus == 'public' ? '🌍 Public' : '🔒 Private'}">Public</span>
+                </p>
+                <div class="actions" style="margin-top:12px;">
+                    <a th:href="@{'/user/playlists/' + ${playlist.playlistId}}" class="btn-view">View</a>
+                    <form th:action="@{'/user/playlists/' + ${playlist.playlistId} + '/delete'}" method="post"
+                        style="display:inline;">
+                        <button type="submit" class="btn-danger"
+                            onclick="return confirm('Delete this playlist?')">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(playlists)}"
+            style="text-align: center; color: #b3b3b3; padding: 50px;">
+            <p style="font-size:3em;">🎵</p>
+            <p style="margin-top:12px;">No playlists yet. Create your first playlist above!</p>
+        </div>
+        <div style="height: 100px;"></div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.location.hash === '#createPlaylistForm') {
+                    const el = document.getElementById('createPlaylistForm');
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth' });
+                        setTimeout(() => {
+                            document.getElementById('playlist_name_input').focus();
+                        }, 500);
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>

@@ -35,4 +35,7 @@ public class Album {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Transient
+    private String artistName;
 }

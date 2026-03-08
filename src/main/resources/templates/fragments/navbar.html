@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<body>
+    <div th:fragment="navbar" class="sidebar">
+        <div class="logo">
+            <span sec:authorize="hasRole('ARTIST')">🎵 RevPlay Artist</span>
+            <span sec:authorize="!hasRole('ARTIST')">🎵 RevPlay</span>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-header">BROWSE</div>
+            <a sec:authorize="hasRole('ARTIST')" href="/artist/dashboard" class="nav-item">
+                <span class="icon">🏠</span> Home
+            </a>
+            <a sec:authorize="!hasRole('ARTIST')" href="/user/dashboard" class="nav-item">
+                <span class="icon">🏠</span> Home
+            </a>
+
+            <a href="/user/library" class="nav-item">
+                <span class="icon">🎶</span> Songs
+            </a>
+            <a href="/user/browse-genres" class="nav-item">
+                <span class="icon">📚</span> Genres
+            </a>
+            <a href="/user/browse-albums" class="nav-item">
+                <span class="icon">💿</span> Albums
+            </a>
+            <a href="/user/browse-artists" class="nav-item">
+                <span class="icon">👥</span> Artists
+            </a>
+            <a href="/user/browse-podcasts" class="nav-item">
+                <span class="icon">🎙️</span> Podcasts
+            </a>
+        </div>
+
+        <div sec:authorize="hasRole('ARTIST')" class="sidebar-section">
+            <div class="sidebar-header">ARTIST STUDIO</div>
+            <a href="/artist/upload" class="nav-item">
+                <span class="icon">📤</span> Upload Song
+            </a>
+            <a href="/artist/my-songs" class="nav-item">
+                <span class="icon">🎶</span> My Songs
+            </a>
+            <a href="/artist/albums" class="nav-item">
+                <span class="icon">💿</span> My Albums
+            </a>
+            <a href="/artist/my-podcasts" class="nav-item">
+                <span class="icon">📻</span> My Podcasts
+            </a>
+            <a href="/artist/analytics" class="nav-item">
+                <span class="icon">📈</span> Analytics
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-header">YOUR COLLECTION</div>
+            <a href="/user/playlists" class="nav-item">
+                <span class="icon">🎵</span> Create Playlist
+            </a>
+            <a href="/user/all-playlists" class="nav-item">
+                <span class="icon">🌍</span> All Playlists
+            </a>
+            <a href="/user/favorites" class="nav-item">
+                <span class="icon">❤️</span> Favorites
+            </a>
+            <a href="/user/history" class="nav-item">
+                <span class="icon">🕓</span> History
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-header">ACCOUNT</div>
+            <a href="/user/profile" class="nav-item">
+                <span class="icon">👤</span> Profile
+            </a>
+        </div>
+
+        <a href="/logout" class="nav-item" style="margin-top: auto; color: var(--error); border-left: none;">
+            <span class="icon">🚪</span> Logout
+        </a>
+    </div>
+</body>
+
+</html>

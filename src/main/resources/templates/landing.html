@@ -1,0 +1,239 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/public-layout :: layout(title='Welcome', content=~{::content}, scripts=~{::scripts})}">
+
+<body>
+    <div th:fragment="content">
+        <style>
+            :root {
+                --primary: #1DB954;
+                --bg-dark: #000000;
+                --card-bg: rgba(255, 255, 255, 0.03);
+                --border: rgba(255, 255, 255, 0.1);
+                --text-main: #ffffff;
+                --text-sub: #888888;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #000;
+                background-image: radial-gradient(circle at center, rgba(29, 185, 84, 0.1), transparent 85%);
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+                color: var(--text-main);
+                font-family: 'Inter', sans-serif;
+                overflow-y: auto;
+                width: 100vw;
+                min-height: 100vh;
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+            }
+
+            .top-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: linear-gradient(to right, var(--primary), #1ed760);
+                z-index: 100;
+            }
+
+            .landing-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 10;
+                padding: 60px 20px 40px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .logo-section {
+                text-align: center;
+                margin-bottom: 60px;
+            }
+
+            .logo-section h1 {
+                font-size: 5rem;
+                font-weight: 800;
+                margin: 0;
+                padding: 8px 4px;
+                line-height: 1.2;
+                background: linear-gradient(to right, var(--primary), #1ed760);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                letter-spacing: -2px;
+            }
+
+            .logo-section p {
+                color: var(--text-sub);
+                font-size: 1.2rem;
+                margin-top: 10px;
+            }
+
+            .cards-grid {
+                display: flex;
+                gap: 40px;
+                max-width: 1000px;
+                padding: 20px;
+            }
+
+            .card {
+                background: var(--card-bg);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--border);
+                border-radius: 32px;
+                padding: 60px 40px;
+                width: 380px;
+                text-align: center;
+                transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .card:hover {
+                transform: translateY(-15px);
+                border-color: var(--primary);
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            }
+
+            .card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at top right, rgba(29, 185, 84, 0.08), transparent 60%);
+                pointer-events: none;
+            }
+
+            .icon {
+                font-size: 4.5rem;
+                margin-bottom: 30px;
+                display: block;
+            }
+
+            h2 {
+                font-size: 2rem;
+                margin-bottom: 15px;
+                font-weight: 700;
+            }
+
+            .description {
+                color: var(--text-sub);
+                font-size: 1rem;
+                line-height: 1.6;
+                margin-bottom: 40px;
+                height: 50px;
+            }
+
+            .actions {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .btn {
+                display: block;
+                padding: 16px;
+                border-radius: 12px;
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 0.95rem;
+                transition: all 0.3s;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .btn-primary {
+                background: var(--primary);
+                color: black;
+            }
+
+            .btn-primary:hover {
+                background: #23ff70;
+                color: white;
+                transform: scale(1.02);
+            }
+
+            .btn-outline {
+                border: 1px solid var(--border);
+                color: white;
+            }
+
+            .btn-outline:hover {
+                background: rgba(255, 255, 255, 0.05);
+                border-color: white;
+            }
+
+            .footer-note {
+                position: relative;
+                margin-top: 40px;
+                color: #444;
+                font-size: 0.8rem;
+                letter-spacing: 1px;
+                text-align: center;
+            }
+
+            .bg-glow {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 800px;
+                height: 800px;
+                background: radial-gradient(circle, rgba(29, 185, 84, 0.05) 0%, transparent 70%);
+                pointer-events: none;
+                z-index: 0;
+            }
+        </style>
+        <div class="top-bar"></div>
+        <div class="bg-glow"></div>
+        <div class="landing-container">
+            <div class="logo-section">
+                <h1>RevPlay</h1>
+                <p>The next generation of music streaming</p>
+            </div>
+
+            <div class="cards-grid">
+                <!-- Listener Card -->
+                <div class="card">
+                    <img src="https://e7.pngegg.com/pngimages/17/45/png-clipart-man-music-silhouette-note-song-listening-lifestyle-earphones-concept-icon-thumbnail.png"
+                        alt="Listener"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 30px; display: block; border: 3px solid var(--primary); box-shadow: 0 0 20px rgba(29, 185, 84, 0.3); background: white;">
+                    <h2>Listener</h2>
+                    <p class="description">Discover millions of songs and podcasts from your favorite creators.</p>
+                    <div class="actions">
+                        <a href="/login" class="btn btn-primary">Login as Listener</a>
+                        <a href="/register/listener" class="btn btn-outline">Create Listener Account</a>
+                    </div>
+                </div>
+
+                <!-- Artist Card -->
+                <div class="card">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJ6PIQTT-nE-8r6kcA0is7mJIN7ZKwfoL25Q&s"
+                        alt="Artist"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 30px; display: block; border: 3px solid var(--primary); box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);">
+                    <h2>Artist</h2>
+                    <p class="description">Upload your tracks, reach new fans, and grow your music career.</p>
+                    <div class="actions">
+                        <a href="/login/artist" class="btn btn-primary">Login as Artist</a>
+                        <a href="/register/artist" class="btn btn-outline">Create Artist Account</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-note">
+                &copy; 2026 REVPLAY PLATFORM &bull; ALL RIGHTS RESERVED
+            </div>
+        </div>
+    </div>
+    <div th:fragment="scripts"></div>
+</body>
+
+</html>

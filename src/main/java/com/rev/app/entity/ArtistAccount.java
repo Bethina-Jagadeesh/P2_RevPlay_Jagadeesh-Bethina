@@ -35,23 +35,29 @@ public class ArtistAccount {
     @Column(name = "instagram_link")
     private String instagramLink;
 
+    @Column(name = "twitter_link")
+    private String twitterLink;
+
     @Column(name = "youtube_link")
     private String youtubeLink;
 
     @Column(name = "spotify_link")
     private String spotifyLink;
 
-    @Transient
+    @Column(name = "security_question")
     private String securityQuestion;
 
-    @Transient
+    @Column(name = "security_answer_hash")
     private String securityAnswerHash;
 
-    @Transient
+    @Column(name = "password_hint")
     private String passwordHint;
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
