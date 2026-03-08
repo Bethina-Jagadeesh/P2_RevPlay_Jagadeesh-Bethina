@@ -110,6 +110,33 @@
                     th:text="${album != null ? album.title : (artist != null ? artist.stageName : (genre != null ? genre.genreName : 'Songs'))}">
                     Title</h1>
                 <p th:text="${#lists.size(songs)} + ' songs'"></p>
+
+                <!-- Artist Bio (Added) -->
+                <p th:if="${artist != null and artist.bio != null and !artist.bio.isEmpty()}" th:text="${artist.bio}"
+                    style="color: #b3b3b3; margin-top: 12px; font-size: 0.95rem; max-width: 600px; line-height: 1.5;">
+                </p>
+
+                <div th:if="${artist != null and (
+                    (artist.instagramLink != null and !artist.instagramLink.isEmpty()) or 
+                    (artist.twitterLink != null and !artist.twitterLink.isEmpty()) or 
+                    (artist.youtubeLink != null and !artist.youtubeLink.isEmpty())
+                )}" style="display:flex; gap:12px; margin-top:20px;">
+                    <a th:if="${artist.instagramLink != null && !artist.instagramLink.isEmpty()}"
+                        th:href="${artist.instagramLink}" target="_blank" title="Instagram"
+                        style="background:rgba(225, 48, 108, 0.1); color:#E1306C; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:transform 0.2s; font-size:1.2rem;">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a th:if="${artist.twitterLink != null && !artist.twitterLink.isEmpty()}"
+                        th:href="${artist.twitterLink}" target="_blank" title="Twitter"
+                        style="background:rgba(29, 161, 242, 0.1); color:#1DA1F2; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:transform 0.2s; font-size:1.2rem;">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a th:if="${artist.youtubeLink != null && !artist.youtubeLink.isEmpty()}"
+                        th:href="${artist.youtubeLink}" target="_blank" title="YouTube"
+                        style="background:rgba(255, 0, 0, 0.1); color:#FF0000; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:transform 0.2s; font-size:1.2rem;">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -150,12 +177,20 @@
                         th:text="${(song.durationSeconds / 60) + ':' + (song.durationSeconds % 60 < 10 ? '0' : '') + (song.durationSeconds % 60)}">
                         3:45</td>
                     <td>
-                        <button class="like-btn" th:data-song-id="${song.songId}"
-                            th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
-                            th:classappend="${song.favorite ? 'liked' : ''}"
-                            style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
-                            <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
-                        </button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button class="add-playlist-btn"
+                                th:onclick="'event.stopPropagation(); openPlaylistModal(event, ' + ${song.songId} + ')'"
+                                style="background:none; border:none; font-size:1.4rem; color: #b3b3b3; cursor:pointer;"
+                                title="Add to Playlist">
+                                <i class="fas fa-plus" style="color: #a252ff;"></i>
+                            </button>
+                            <button class="like-btn" th:data-song-id="${song.songId}"
+                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                                th:classappend="${song.favorite ? 'liked' : ''}"
+                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
+                                <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>

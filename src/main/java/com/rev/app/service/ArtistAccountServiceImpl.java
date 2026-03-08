@@ -67,6 +67,10 @@ public class ArtistAccountServiceImpl implements IArtistAccountService {
         if (existingArtist != null) {
             existingArtist.setStageName(requestDto.getStageName());
             existingArtist.setBio(requestDto.getBio());
+            existingArtist.setInstagramLink(requestDto.getInstagramLink());
+            existingArtist.setTwitterLink(requestDto.getTwitterLink());
+            existingArtist.setYoutubeLink(requestDto.getYoutubeLink());
+            existingArtist.setSpotifyLink(requestDto.getSpotifyLink());
             artistRepository.save(existingArtist);
             return artistAccountMapper.toResponseDto(existingArtist);
         }

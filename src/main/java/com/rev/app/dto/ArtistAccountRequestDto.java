@@ -16,6 +16,7 @@ public class ArtistAccountRequestDto {
     private String bio;
     private String genre;
     private String instagramLink;
+    private String twitterLink;
     private String youtubeLink;
     private String spotifyLink;
     private String securityQuestion;

@@ -10,7 +10,7 @@
         </style>
         <style>
             .page-header {
-                background: linear-gradient(135deg, #1a2a4a, #1DB954);
+                background: linear-gradient(135deg, #FF4B2B, #FF416C);
                 padding: 40px;
                 border-radius: 12px;
                 margin-bottom: 30px;
@@ -107,11 +107,19 @@
                         th:text="${(song.durationSeconds / 60) + ':' + (song.durationSeconds % 60 < 10 ? '0' : '') + (song.durationSeconds % 60)}">
                         3:45</td>
                     <td>
-                        <button class="like-btn liked" th:data-song-id="${song.songId}"
-                            th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
-                            style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
-                            <span class="heart-icon">❤️</span>
-                        </button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button class="add-playlist-btn"
+                                th:onclick="'event.stopPropagation(); openPlaylistModal(event, ' + ${song.songId} + ')'"
+                                style="background:none; border:none; font-size:1.4rem; color: #b3b3b3; cursor:pointer;"
+                                title="Add to Playlist">
+                                <i class="fas fa-plus" style="color: #a252ff;"></i>
+                            </button>
+                            <button class="like-btn liked" th:data-song-id="${song.songId}"
+                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
+                                <span class="heart-icon">❤️</span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>

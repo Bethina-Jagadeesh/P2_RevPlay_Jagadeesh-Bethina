@@ -32,6 +32,7 @@ public class UserController {
     private final IArtistAccountService artistService;
     private final IPodcastService podcastService;
     private final IGenreService genreService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public UserController(ISongService songService,
             IFavoriteSongService favoriteSongService,
@@ -42,7 +43,8 @@ public class UserController {
             IAlbumService albumService,
             IArtistAccountService artistService,
             IPodcastService podcastService,
-            IGenreService genreService) {
+            IGenreService genreService,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.songService = songService;
         this.favoriteSongService = favoriteSongService;
         this.playlistService = playlistService;
@@ -53,6 +55,7 @@ public class UserController {
         this.artistService = artistService;
         this.podcastService = podcastService;
         this.genreService = genreService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     private int resolveUserId(UserDetails userDetails) {
@@ -351,12 +354,15 @@ public class UserController {
             }
         } else {
             int userId = resolveUserId(userDetails);
-            UserAccountResponseDto userDto = userService.getUserByEmail(email);
-            int totalPlaylists = playlistService.getPlaylistsByUserId(userId).size();
-            int totalFavorites = favoriteSongService.getFavoritesByUser(userId).size();
-            model.addAttribute("user", userDto);
-            model.addAttribute("totalPlaylists", totalPlaylists);
-            model.addAttribute("totalFavorites", totalFavorites);
+            Optional<UserAccount> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                UserAccount user = userOpt.get();
+                int totalPlaylists = playlistService.getPlaylistsByUserId(userId).size();
+                int totalFavorites = favoriteSongService.getFavoritesByUser(userId).size();
+                model.addAttribute("user", user);
+                model.addAttribute("totalPlaylists", totalPlaylists);
+                model.addAttribute("totalFavorites", totalFavorites);
+            }
         }
 
         model.addAttribute("isArtist", isArtist);
@@ -365,9 +371,76 @@ public class UserController {
         return "listener/profile";
     }
 
+    @PostMapping("/profile/change-password")
+    @ResponseBody
+    public java.util.Map<String, Object> changePassword(
+            @RequestParam(value = "currentPassword", required = false) String currentPassword,
+            @RequestParam(value = "securityAnswer", required = false) String securityAnswer,
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("confirmPassword") String confirmPassword,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+
+        if (!newPassword.equals(confirmPassword)) {
+            response.put("status", "error");
+            response.put("message", "Passwords do not match.");
+            return response;
+        }
+
+        String email = userDetails.getUsername();
+        boolean isArtist = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ARTIST"));
+
+        Boolean verified = false;
+
+        if (isArtist) {
+            Optional<ArtistAccount> artistOpt = artistService.getArtistByEmail(email);
+            if (artistOpt.isPresent()) {
+                ArtistAccount artist = artistOpt.get();
+                if (currentPassword != null && !currentPassword.isEmpty()) {
+                    verified = this.passwordEncoder.matches(currentPassword, artist.getPasswordHash());
+                } else if (securityAnswer != null && !securityAnswer.isEmpty()) {
+                    verified = this.passwordEncoder.matches(securityAnswer, artist.getSecurityAnswerHash());
+                }
+
+                if (verified) {
+                    artist.setPasswordHash(this.passwordEncoder.encode(newPassword));
+                    artistService.saveArtist(artist);
+                    response.put("status", "success");
+                    return response;
+                }
+            }
+        } else {
+            Optional<UserAccount> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                UserAccount user = userOpt.get();
+                if (currentPassword != null && !currentPassword.isEmpty()) {
+                    verified = this.passwordEncoder.matches(currentPassword, user.getPasswordHash());
+                } else if (securityAnswer != null && !securityAnswer.isEmpty()) {
+                    verified = this.passwordEncoder.matches(securityAnswer, user.getSecurityAnswerHash());
+                }
+
+                if (verified) {
+                    user.setPasswordHash(this.passwordEncoder.encode(newPassword));
+                    userRepository.save(user);
+                    response.put("status", "success");
+                    return response;
+                }
+            }
+        }
+
+        response.put("status", "error");
+        response.put("message", "Invalid current password or security answer.");
+        return response;
+    }
+
     @PostMapping("/profile/update")
     public String updateProfile(@RequestParam("fullName") String fullName,
             @RequestParam(value = "bio", required = false) String bio,
+            @RequestParam(value = "instagramLink", required = false) String instagramLink,
+            @RequestParam(value = "twitterLink", required = false) String twitterLink,
+            @RequestParam(value = "youtubeLink", required = false) String youtubeLink,
             @RequestParam(value = "profilePhoto", required = false) org.springframework.web.multipart.MultipartFile file,
             @AuthenticationPrincipal UserDetails userDetails) {
 
@@ -399,6 +472,12 @@ public class UserController {
                 artist.setStageName(fullName);
                 if (bio != null)
                     artist.setBio(bio);
+                if (instagramLink != null)
+                    artist.setInstagramLink(instagramLink);
+                if (twitterLink != null)
+                    artist.setTwitterLink(twitterLink);
+                if (youtubeLink != null)
+                    artist.setYoutubeLink(youtubeLink);
                 if (photoUrl != null)
                     artist.setProfileImageUrl(photoUrl);
                 artistService.saveArtist(artist);
@@ -518,13 +597,28 @@ public class UserController {
         return "listener/view_songs";
     }
 
-    @GetMapping("/api/genres/{id}/songs")
+    @GetMapping("/api/playlists")
     @ResponseBody
-    public List<SongResponseDto> getSongsByGenreIdApi(@PathVariable int id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        List<SongResponseDto> songs = songService.getSongsByGenreId(id);
+    public List<PlaylistResponseDto> getUserPlaylistsApi(@AuthenticationPrincipal UserDetails userDetails) {
         int userId = resolveUserId(userDetails);
-        markFavorites(songs, userId);
-        return songs;
+        return playlistService.getPlaylistsByUserId(userId);
+    }
+
+    @PostMapping("/api/playlists/{id}/songs/add/{songId}")
+    @ResponseBody
+    public java.util.Map<String, String> addSongToPlaylistApi(@PathVariable int id, @PathVariable int songId) {
+        playlistService.addSongToPlaylist(id, songId);
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("status", "success");
+        return response;
+    }
+
+    @PostMapping("/api/playlists/create")
+    @ResponseBody
+    public PlaylistResponseDto createPlaylistApi(@RequestBody PlaylistRequestDto request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        int userId = resolveUserId(userDetails);
+        request.setUserId(userId);
+        return playlistService.createPlaylist(request);
     }
 }

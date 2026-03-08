@@ -175,12 +175,20 @@
                                 style="font-size: 0.8rem; color: #b3b3b3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 Artist</p>
                         </div>
-                        <button class="like-btn" th:data-song-id="${song.songId}"
-                            th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
-                            th:classappend="${song.favorite ? 'liked' : ''}"
-                            style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3; margin-top: 2px;">
-                            <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
-                        </button>
+                        <div style="display:flex; gap:8px; align-items:center; margin-top:2px;">
+                            <button class="add-playlist-btn"
+                                th:onclick="'openPlaylistModal(event, ' + ${song.songId} + ')'"
+                                style="background:none; border:none; font-size:1.4rem; color:#b3b3b3; cursor:pointer;"
+                                title="Add to Playlist">
+                                <i class="fas fa-plus" style="color: #a252ff;"></i>
+                            </button>
+                            <button class="like-btn" th:data-song-id="${song.songId}"
+                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                                th:classappend="${song.favorite ? 'liked' : ''}"
+                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
+                                <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -214,7 +222,20 @@
                                 style="font-size: 0.8rem; color: #b3b3b3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 Artist</p>
                         </div>
-                        <!-- Removed like symbol from recently played as shown in second image -->
+                        <div style="display:flex; gap:8px; align-items:center; margin-top:2px;">
+                            <button class="add-playlist-btn"
+                                th:onclick="'openPlaylistModal(event, ' + ${song.songId} + ')'"
+                                style="background:none; border:none; font-size:1.4rem; color:#b3b3b3; cursor:pointer;"
+                                title="Add to Playlist">
+                                <i class="fas fa-plus" style="color: #a252ff;"></i>
+                            </button>
+                            <button class="like-btn" th:data-song-id="${song.songId}"
+                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                                th:classappend="${song.favorite ? 'liked' : ''}"
+                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
+                                <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

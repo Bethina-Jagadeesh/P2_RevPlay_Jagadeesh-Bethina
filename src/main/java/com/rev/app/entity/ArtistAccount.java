@@ -35,6 +35,9 @@ public class ArtistAccount {
     @Column(name = "instagram_link")
     private String instagramLink;
 
+    @Column(name = "twitter_link")
+    private String twitterLink;
+
     @Column(name = "youtube_link")
     private String youtubeLink;
 

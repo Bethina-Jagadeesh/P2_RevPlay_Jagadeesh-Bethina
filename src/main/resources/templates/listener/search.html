@@ -134,12 +134,20 @@
                             th:text="${(song.durationSeconds / 60) + ':' + (song.durationSeconds % 60 < 10 ? '0' : '') + (song.durationSeconds % 60)}">
                             3:30</td>
                         <td>
-                            <button class="like-btn" th:data-song-id="${song.songId}"
-                                th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
-                                th:classappend="${song.favorite ? 'liked' : ''}"
-                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
-                                <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
-                            </button>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <button class="add-playlist-btn"
+                                    th:onclick="'event.stopPropagation(); openPlaylistModal(event, ' + ${song.songId} + ')'"
+                                    style="background:none; border:none; font-size:1.4rem; color: #b3b3b3; cursor:pointer;"
+                                    title="Add to Playlist">
+                                    <i class="fas fa-plus" style="color: #a252ff;"></i>
+                                </button>
+                                <button class="like-btn" th:data-song-id="${song.songId}"
+                                    th:onclick="'event.stopPropagation(); toggleLike(' + ${song.songId} + ', this)'"
+                                    th:classappend="${song.favorite ? 'liked' : ''}"
+                                    style="background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; color: #b3b3b3;">
+                                    <span class="heart-icon" th:text="${song.favorite ? '❤️' : '🤍'}">🤍</span>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

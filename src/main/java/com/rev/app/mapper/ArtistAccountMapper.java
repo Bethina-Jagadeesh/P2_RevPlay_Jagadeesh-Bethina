@@ -18,6 +18,7 @@ public class ArtistAccountMapper {
         entity.setBio(dto.getBio());
         entity.setGenre(dto.getGenre());
         entity.setInstagramLink(dto.getInstagramLink());
+        entity.setTwitterLink(dto.getTwitterLink());
         entity.setYoutubeLink(dto.getYoutubeLink());
         entity.setSpotifyLink(dto.getSpotifyLink());
         entity.setStatus("ACTIVE");
@@ -34,6 +35,7 @@ public class ArtistAccountMapper {
                 .bio(entity.getBio())
                 .genre(entity.getGenre())
                 .instagramLink(entity.getInstagramLink())
+                .twitterLink(entity.getTwitterLink())
                 .youtubeLink(entity.getYoutubeLink())
                 .spotifyLink(entity.getSpotifyLink())
                 .status(entity.getStatus())

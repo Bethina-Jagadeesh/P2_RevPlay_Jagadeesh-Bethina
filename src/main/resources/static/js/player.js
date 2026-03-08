@@ -348,15 +348,24 @@ window.RevPlayer = {
         const pBtn = document.querySelector('.btn-play');
         if (pBtn) {
             pBtn.innerHTML = this.isPlaying ? '<span>⏸</span>' : '<span>▶</span>';
+            pBtn.title = this.isPlaying ? 'Pause' : 'Play';
         }
 
         const sBtn = document.querySelector('.btn-shuffle');
-        if (sBtn) sBtn.style.color = this.isShuffle ? '#1DB954' : '#b3b3b3';
+        if (sBtn) {
+            sBtn.style.color = this.isShuffle ? '#1DB954' : '#b3b3b3';
+            sBtn.title = this.isShuffle ? 'Shuffle On' : 'Shuffle Off';
+        }
 
         const rBtn = document.querySelector('.btn-repeat');
         if (rBtn) {
             rBtn.style.color = this.repeatMode !== 'off' ? '#1DB954' : '#b3b3b3';
             rBtn.innerText = this.repeatMode === 'one' ? '🔂' : '🔁';
+            
+            let repeatTitle = 'Repeat Off';
+            if (this.repeatMode === 'one') repeatTitle = 'Repeat One';
+            else if (this.repeatMode === 'all') repeatTitle = 'Repeat All';
+            rBtn.title = repeatTitle;
         }
     },
 
