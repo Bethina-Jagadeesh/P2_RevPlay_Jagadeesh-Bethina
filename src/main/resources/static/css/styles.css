@@ -32,7 +32,8 @@ body {
     background-position: center;
     color: var(--text-main);
     line-height: 1.6;
-    overflow-x: hidden;
+    /* Note: overflow-x:hidden removed — it traps position:fixed child elements
+       in some browsers, causing the player-bar footer to disappear */
 }
 
 /* Scrollbar Styling */
@@ -158,6 +159,7 @@ a:hover {
 .main-content {
     margin-left: 260px;
     padding: 32px;
+    padding-bottom: 110px; /* Reserve space so content never hides under the fixed player-bar */
     min-height: 100vh;
 }
 

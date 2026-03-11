@@ -4,7 +4,7 @@
 <body>
     <div th:fragment="content" class="auth-container">
         <div class="auth-card" style="max-width: 550px;">
-            <a href="/" class="back"
+            <a th:href="@{/}" class="back"
                 style="color: var(--text-sub); font-size: 0.85rem; display: block; margin-bottom: 24px;">← Back to
                 home</a>
             <div class="logo"
@@ -105,7 +105,7 @@
             </form>
 
             <div style="text-align: center; margin-top: 24px; font-size: 0.85rem; color: var(--text-sub);">
-                Already have an artist account? <a href="/login/artist">Log in here</a>
+                Already have an artist account? <a th:href="@{/login/artist}">Log in here</a>
             </div>
         </div>
     </div>

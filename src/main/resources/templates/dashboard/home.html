@@ -112,8 +112,8 @@
         <div th:fragment="scripts">
             <script th:inline="javascript">
                 // Combine both lists for the player
-                const topStats = /*[[${topSongs}]]*/[];
-                const recents = /*[[${recentPlayed}]]*/[];
+                var topStats = /*[[${topSongs}]]*/[];
+                var recents = /*[[${recentPlayed}]]*/[];
                 window.allSongs = [...topStats, ...recents];
 
                 // Hour-based greeting

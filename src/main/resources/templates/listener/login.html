@@ -4,7 +4,7 @@
 <body>
     <div th:fragment="content" class="auth-container">
         <div class="auth-card">
-            <a href="/" class="back"
+            <a th:href="@{/}" class="back"
                 style="color: var(--text-sub); font-size: 0.85rem; display: block; margin-bottom: 24px;">← Back to
                 home</a>
             <div class="logo" style="color: var(--primary); font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">🎵
@@ -33,14 +33,14 @@
             </form>
 
             <div style="margin-top: 24px; font-size: 0.85rem; color: var(--text-sub); line-height: 2;">
-                <a href="/forgot-password/listener" style="display: block; margin-bottom: 4px;">Forgot your
+                <a th:href="@{/forgot-password/listener}" style="display: block; margin-bottom: 4px;">Forgot your
                     password?</a>
-                Don't have an account? <a href="/register/listener">Register here</a>
+                Don't have an account? <a th:href="@{/register/listener}">Register here</a>
             </div>
 
             <hr style="border: 0; border-top: 1px solid var(--bg-elevated); margin: 24px 0;">
             <div style="font-size: 0.85rem; color: var(--text-sub);">
-                Are you an artist? <a href="/login/artist" style="color: var(--primary); font-weight: 600;">Artist Login
+                Are you an artist? <a th:href="@{/login/artist}" style="color: var(--primary); font-weight: 600;">Artist Login
                     →</a>
             </div>
         </div>

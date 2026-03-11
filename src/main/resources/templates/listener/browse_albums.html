@@ -19,8 +19,10 @@
         </div>
 
         <div class="card-grid">
-            <div class="music-card album-card" th:each="album : ${albums}"
-                th:onclick="|location.href='/user/albums/${album.albumId}/songs'|">
+            <!-- Album cards use <a> tags so the global SPA interceptor catches clicks and keeps music playing -->
+            <a class="music-card album-card" th:each="album : ${albums}"
+                th:href="@{'/user/albums/' + ${album.albumId} + '/songs'}"
+                style="display: block; text-decoration: none; color: inherit;">
                 <div class="art" th:if="${album.coverImageUrl == null or album.coverImageUrl.isEmpty()}"
                     style="width: 100%; height: 160px; background: linear-gradient(135deg, #333, #111); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
                     💿</div>
@@ -29,7 +31,7 @@
                 <div class="play-overlay">▶</div>
                 <h4 class="item-title" th:text="${album.title}">Album Title</h4>
                 <p th:text="${album.artistName != null ? album.artistName : 'Unknown Artist'}">Artist</p>
-            </div>
+            </a>
 
             <div class="empty-state" th:if="${#lists.isEmpty(albums)}"
                 style="grid-column: 1/-1; text-align: center; color: #b3b3b3; padding: 40px;">

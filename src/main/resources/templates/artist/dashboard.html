@@ -251,8 +251,8 @@
 
     <div th:fragment="scripts">
         <script th:inline="javascript">
-            const topStats = /*[[${topSongs}]]*/[];
-            const recents = /*[[${recentPlayed}]]*/[];
+            var topStats = /*[[${topSongs}]]*/[];
+            var recents = /*[[${recentPlayed}]]*/[];
             window.allSongs = [...topStats, ...recents];
         </script>
     </div>

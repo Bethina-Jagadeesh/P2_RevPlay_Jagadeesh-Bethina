@@ -18,6 +18,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(
             org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:src/main/resources/static/uploads/");
+                .addResourceLocations("file:///C:/Users/Bethini Kavya/Desktop/RevPlay_P2/RevPlay_P2/src/main/resources/static/uploads/");
     }
 }

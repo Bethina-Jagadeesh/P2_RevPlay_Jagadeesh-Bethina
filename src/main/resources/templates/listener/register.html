@@ -4,7 +4,7 @@
 <body>
     <div th:fragment="content" class="auth-container">
         <div class="auth-card" style="max-width: 500px;">
-            <a href="/" class="back"
+            <a th:href="@{/}" class="back"
                 style="color: var(--text-sub); font-size: 0.85rem; display: block; margin-bottom: 24px;">← Back to
                 home</a>
             <div class="logo"
@@ -73,7 +73,7 @@
             </form>
 
             <div style="text-align: center; margin-top: 24px; font-size: 0.85rem; color: var(--text-sub);">
-                Already have an account? <a href="/login">Log in here</a>
+                Already have an account? <a th:href="@{/login}">Log in here</a>
             </div>
         </div>
     </div>

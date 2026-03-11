@@ -452,7 +452,7 @@ public class UserController {
         if (file != null && !file.isEmpty()) {
             try {
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                String uploadDir = "src/main/resources/static/uploads/profiles/";
+                String uploadDir = "C:/Users/Bethini Kavya/Desktop/RevPlay_P2/RevPlay_P2/src/main/resources/static/uploads/profiles/";
                 java.io.File dir = new java.io.File(uploadDir);
                 if (!dir.exists())
                     dir.mkdirs();

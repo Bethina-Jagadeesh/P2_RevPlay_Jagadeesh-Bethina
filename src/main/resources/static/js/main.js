@@ -65,6 +65,11 @@ function navigateTo(url, push = true) {
     const mainContent = document.querySelector('.main-content');
     if (mainContent) mainContent.style.opacity = '0.5';
 
+    // ── CRITICAL: save the player bar BEFORE any DOM changes ──
+    // The innerHTML swap can accidentally pull .player-bar inside .main-content
+    // if the browser's DOMParser nests it there. We move it back afterwards.
+    const playerBar = document.querySelector('.player-bar');
+
     fetch(url)
         .then(res => {
             if (!res.ok) {
@@ -91,26 +96,62 @@ function navigateTo(url, push = true) {
                     window.history.pushState({}, '', url);
                 }
 
-                // Execute any new inline scripts
+                // ── Ensure the player-bar and playlist-modal are still direct children of <body> ──
+                // After innerHTML swap they may have been moved or threatened.
+                // Re-anchor them to body so visibility and fixed positioning work correctly.
+                if (playerBar) {
+                    if (!document.body.contains(playerBar) || playerBar.parentElement !== document.body) {
+                        document.body.appendChild(playerBar);
+                    }
+                }
+                const pModal = document.getElementById('playlistModal');
+                if (pModal) {
+                    if (!document.body.contains(pModal) || pModal.parentElement !== document.body) {
+                        document.body.appendChild(pModal);
+                    }
+                }
+
+                // Execute any new inline scripts from the fetched page
                 const scripts = doc.querySelectorAll('script');
                 scripts.forEach(s => {
                     if (!s.src) {
-                        const newScript = document.createElement('script');
-                        newScript.textContent = s.textContent;
-                        document.body.appendChild(newScript);
-                        setTimeout(() => newScript.remove(), 100);
+                        try {
+                            const newScript = document.createElement('script');
+                            newScript.textContent = s.textContent;
+                            document.body.appendChild(newScript);
+                            setTimeout(() => newScript.remove(), 100);
+                        } catch (e) {
+                            console.error("SPA inline script error:", e);
+                        }
                     }
                 });
+
+                // ── Restore player footer state ──
+                // Re-bind button controls and re-paint current song info.
+                setTimeout(() => {
+                    if (window.RevPlayer) {
+                        window.RevPlayer.bindGlobalControls();
+                        if (window.RevPlayer.currentSong) {
+                            window.RevPlayer.updateSongInfo(window.RevPlayer.currentSong);
+                            window.RevPlayer.updateUI();
+                            window.RevPlayer.updateProgressBar();
+                        }
+                        console.log("RevPlay: SPA nav done, player restored ->", url);
+                    }
+                }, 50);
+
             } else {
-                window.location.href = url;
+                console.error("SPA Blocked: .main-content not found for URL:", url);
+                if (oldContent) oldContent.style.opacity = '1';
             }
         })
         .catch(err => {
-            if (err.message !== "Redirecting to login") {
-                window.location.href = url;
-            }
+            console.error("SPA Fetch Exception:", err);
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) mainContent.style.opacity = '1';
         });
 }
+
 
 // Global click interceptor for SPA navigation
 document.addEventListener('click', function (e) {
@@ -121,9 +162,13 @@ document.addEventListener('click', function (e) {
     const href = a.getAttribute('href');
     if (!href || href.startsWith('#') || href.startsWith('javascript:') || href === '/logout' || a.hasAttribute('download') || a.target === '_blank') return;
 
-    // Check if it's the same origin
-    if (a.origin !== window.location.origin) return;
-    if (a.pathname.startsWith('/uploads')) return;
+    try {
+        const targetUrl = new URL(a.href, window.location.origin);
+        if (targetUrl.origin !== window.location.origin) return;
+        if (targetUrl.pathname.startsWith(window.contextPath + 'uploads')) return;
+    } catch(err) {
+        return;
+    }
 
     e.preventDefault();
     navigateTo(a.href);
@@ -142,7 +187,7 @@ function toggleLike(songId, button) {
 
     console.log("Favorite toggle requested for song ID:", songId);
 
-    fetch(`/user/favorites/toggle/${songId}`, {
+    fetch(window.contextPath + `user/favorites/toggle/${songId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
