@@ -43,7 +43,7 @@
 
             <hr style="border:none; border-top:1px solid #444; margin:20px 0;">
             <div style="text-align:center;">
-                <a href="/user/playlists#createPlaylistForm" onclick="closePlaylistModal()"
+                <a th:href="@{/user/playlists#createPlaylistForm}" onclick="closePlaylistModal()"
                     style="display:block; background:#1DB954; color:white; text-decoration:none; padding:12px; border-radius:4px; font-weight:700; cursor:pointer; font-size:0.9rem;">
                     + Create New Playlist
                 </a>
@@ -54,62 +54,108 @@
     </div>
 
     <script th:inline="javascript">
-        let currentPlaylistSongId = null;
+        window.contextPath = /*[[@{/}]]*/ '/';
+        var currentPlaylistSongId = null;
 
         function openPlaylistModal(e, songId) {
-            if (e) e.stopPropagation();
+            if (e) {
+                if (typeof e.stopPropagation === 'function') e.stopPropagation();
+                if (typeof e.preventDefault === 'function') e.preventDefault();
+            }
+            
+            if (!songId) {
+                console.error("openPlaylistModal: No songId provided");
+                return;
+            }
+
             currentPlaylistSongId = songId;
             const modal = document.getElementById('playlistModal');
-            modal.style.display = 'flex';
-            loadUserPlaylists();
+            if (modal) {
+                modal.style.display = 'flex';
+                loadUserPlaylists();
+            } else {
+                console.error("openPlaylistModal: modal element #playlistModal not found.");
+            }
         }
 
         function closePlaylistModal() {
-            document.getElementById('playlistModal').style.display = 'none';
+            const modal = document.getElementById('playlistModal');
+            if (modal) modal.style.display = 'none';
         }
 
         function loadUserPlaylists() {
             const list = document.getElementById('playlistList');
             const loader = document.getElementById('playlistLoader');
+            if (!list || !loader) return;
+
             list.style.display = 'none';
             loader.style.display = 'block';
+            loader.innerText = 'Loading playlists...';
 
-            fetch('/user/api/playlists')
-                .then(res => res.json())
+            fetch(window.contextPath + 'user/api/playlists')
+                .then(res => {
+                    if (!res.ok) throw new Error("Could not fetch playlists");
+                    return res.json();
+                })
                 .then(playlists => {
                     loader.style.display = 'none';
                     list.style.display = 'block';
                     list.innerHTML = '';
 
                     if (!playlists || playlists.length === 0) {
-                        list.innerHTML = '<p style="color:#b3b3b3; text-align:center; padding:10px;">No playlists found.</p>';
+                        list.innerHTML = '<p style="color:#b3b3b3; text-align:center; padding:10px;">No playlists found. Create one first!</p>';
                         return;
                     }
 
                     playlists.forEach(pl => {
                         const item = document.createElement('div');
-                        item.style = 'padding:12px; border-radius:4px; cursor:pointer; color:#fff; transition:background 0.2s; display:flex; align-items:center; gap:10px;';
-                        item.onmouseover = () => item.style.background = '#3e3e3e';
-                        item.onmouseout = () => item.style.background = 'transparent';
-                        item.onclick = () => addToExistingPlaylist(pl.playlistId, pl.name);
-                        item.innerHTML = `<i class="fas fa-music" style="color:#1DB954; font-size:1rem;"></i> <span>${pl.name}</span>`;
+                        item.className = "playlist-item";
+                        item.style = 'padding:12px; border-radius:8px; cursor:pointer; color:#fff; transition:all 0.2s; display:flex; align-items:center; gap:12px; margin-bottom:8px; border:1px solid transparent;';
+                        item.onmouseover = () => {
+                            item.style.background = 'rgba(29, 185, 84, 0.1)';
+                            item.style.borderColor = 'rgba(29, 185, 84, 0.3)';
+                        };
+                        item.onmouseout = () => {
+                            item.style.background = 'transparent';
+                            item.style.borderColor = 'transparent';
+                        };
+                        item.onclick = (event) => {
+                            event.stopPropagation();
+                            addToExistingPlaylist(pl.playlistId, pl.name);
+                        };
+                        item.innerHTML = `<i class="fas fa-compact-disc" style="color:#1DB954; font-size:1.1rem;"></i> <span style="font-weight:600;">${pl.name}</span>`;
                         list.appendChild(item);
                     });
                 })
                 .catch(err => {
                     console.error('Error loading playlists:', err);
-                    loader.innerText = 'Error loading playlists.';
+                    loader.innerText = 'Error loading playlists. Please try again.';
                 });
         }
 
         function addToExistingPlaylist(playlistId, playlistName) {
-            fetch(`/user/api/playlists/${playlistId}/songs/add/${currentPlaylistSongId}`, {
+            if (!currentPlaylistSongId) return;
+
+            const list = document.getElementById('playlistList');
+            if (list) list.style.opacity = '0.5';
+
+            fetch(window.contextPath + `user/api/playlists/${playlistId}/songs/add/${currentPlaylistSongId}`, {
                 method: 'POST'
             })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error("Add to playlist failed");
+                    return res.json();
+                })
                 .then(data => {
-                    alert(`Song added to "${playlistName}"`);
+                    alert(`✅ Song successfully added to "${playlistName}"`);
                     closePlaylistModal();
+                })
+                .catch(err => {
+                    console.error("Add to playlist error:", err);
+                    alert("Failed to add song to playlist. Please try again.");
+                })
+                .finally(() => {
+                    if (list) list.style.opacity = '1';
                 });
         }
 

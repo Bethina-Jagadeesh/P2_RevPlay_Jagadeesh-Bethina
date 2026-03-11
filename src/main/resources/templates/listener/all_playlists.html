@@ -107,8 +107,9 @@
         </div>
 
         <div class="playlist-grid" th:if="${!#lists.isEmpty(playlists)}">
-            <div class="playlist-card" th:each="playlist : ${playlists}"
-                th:onclick="|location.href='/user/playlists/${playlist.playlistId}'|">
+            <a class="playlist-card" th:each="playlist : ${playlists}"
+                th:href="@{'/user/playlists/' + ${playlist.playlistId}}"
+                style="display: block; text-decoration: none; color: inherit;">
                 <span class="public-indicator">🌍</span>
                 <div class="playlist-icon">🎵</div>
                 <h3 th:text="${playlist.name}">Playlist Name</h3>
@@ -117,10 +118,9 @@
                     Description
                 </p>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <a th:href="@{'/user/playlists/' + ${playlist.playlistId}}" class="btn-view"
-                        onclick="event.stopPropagation()">Listen Now</a>
+                    <span class="btn-view">Listen Now</span>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="empty-state" th:if="${#lists.isEmpty(playlists)}"

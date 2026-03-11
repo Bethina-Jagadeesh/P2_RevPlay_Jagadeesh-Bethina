@@ -137,8 +137,7 @@ window.RevPlayer = {
         if (song.fileUrl) {
             let finalUrl = song.fileUrl.replace(/\\/g, '/');
             if (!finalUrl.startsWith('http')) {
-                const prefix = finalUrl.startsWith('/') ? '' : '/';
-                finalUrl = window.location.origin + prefix + finalUrl;
+                finalUrl = window.location.origin + window.contextPath + (finalUrl.startsWith('/') ? finalUrl.substring(1) : finalUrl);
             }
 
             // Escaping special characters (? # etc) by encoding the filename part
@@ -174,7 +173,7 @@ window.RevPlayer = {
 
         // 3. Increment play count (Background)
         if (!fromFetch && !song.isPodcast) {
-            fetch(`/user/play/${song.songId || song.podcastId}`, { method: 'POST' }).catch(() => { });
+            fetch(window.contextPath + `user/play/${song.songId || song.podcastId}`, { method: 'POST' }).catch(() => { });
         }
     },
 
@@ -199,7 +198,7 @@ window.RevPlayer = {
         }
 
         console.log("RevPlayer: Loading podcast details from server...");
-        fetch(`/user/play/podcast/${podcastId}`, { method: 'POST' })
+        fetch(window.contextPath + `user/play/podcast/${podcastId}`, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
                 if (data && data.fileUrl) {
@@ -216,7 +215,7 @@ window.RevPlayer = {
 
     fetchAndPlay(songId) {
         console.log("RevPlayer: Fetching song details for ID:", songId);
-        fetch(`/user/play/${songId}`, { method: 'POST' })
+        fetch(window.contextPath + `user/play/${songId}`, { method: 'POST' })
             .then(r => {
                 if (!r.ok) throw new Error("Server error " + r.status);
                 return r.json();
@@ -345,10 +344,15 @@ window.RevPlayer = {
     },
 
     updateUI() {
+        // Source of truth: check if audio is actually playing
+        const isActuallyPlaying = this.audio && !this.audio.paused && !this.audio.ended && this.audio.readyState > 1;
+        this.isPlaying = isActuallyPlaying;
+
         const pBtn = document.querySelector('.btn-play');
         if (pBtn) {
-            pBtn.innerHTML = this.isPlaying ? '<span>⏸</span>' : '<span>▶</span>';
-            pBtn.title = this.isPlaying ? 'Pause' : 'Play';
+            // Using FontAwesome icons for more reliable and professional UI state
+            pBtn.innerHTML = isActuallyPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play" style="margin-left: 2px;"></i>';
+            pBtn.title = isActuallyPlaying ? 'Pause' : 'Play';
         }
 
         const sBtn = document.querySelector('.btn-shuffle');
@@ -360,7 +364,7 @@ window.RevPlayer = {
         const rBtn = document.querySelector('.btn-repeat');
         if (rBtn) {
             rBtn.style.color = this.repeatMode !== 'off' ? '#1DB954' : '#b3b3b3';
-            rBtn.innerText = this.repeatMode === 'one' ? '🔂' : '🔁';
+            rBtn.innerHTML = this.repeatMode === 'one' ? '🔂' : '🔁';
             
             let repeatTitle = 'Repeat Off';
             if (this.repeatMode === 'one') repeatTitle = 'Repeat One';

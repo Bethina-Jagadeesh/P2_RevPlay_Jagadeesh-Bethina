@@ -128,7 +128,7 @@
 
         <div class="profile-header">
             <div class="avatar-circle">
-                <img th:if="${user != null && user.profileImageUrl != null}" th:src="${user.profileImageUrl}"
+                <img th:if="${user != null && user.profileImageUrl != null}" th:src="@{${user.profileImageUrl}}"
                     style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
                 <span
                     th:if="${user == null || (isArtist ? user.profileImageUrl == null : user.profileImageUrl == null)}"
@@ -210,7 +210,7 @@
         <div id="editModal" class="edit-modal">
             <div class="modal-content">
                 <h2 style="margin-bottom:20px;">Edit Profile</h2>
-                <form action="/user/profile/update" method="POST" enctype="multipart/form-data">
+                <form th:action="@{/user/profile/update}" method="POST" enctype="multipart/form-data">
                     <div style="margin-bottom:15px;">
                         <label style="display:block; margin-bottom:5px; color:#b3b3b3;">Full Name / Stage Name</label>
                         <input th:if="${isArtist}" type="text" name="fullName"
@@ -376,7 +376,7 @@
                 successDiv.style.display = 'none';
 
                 try {
-                    const response = await fetch('/user/profile/change-password', {
+                    const response = await fetch(window.contextPath + 'user/profile/change-password', {
                         method: 'POST',
                         body: formData
                     });
@@ -387,7 +387,7 @@
                         successDiv.style.display = 'block';
                         // Keep the modal open for a moment so they see success, then maybe close or refresh
                         setTimeout(() => {
-                            window.location.href = '/user/profile?updated=password_changed';
+                            window.location.href = window.contextPath + 'user/profile?updated=password_changed';
                         }, 1500);
                     } else {
                         errorDiv.innerText = "❌ " + result.message;

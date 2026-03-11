@@ -25,10 +25,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (roles.contains("ROLE_ARTIST")) {
             logger.info("Artist login successful: {}", authentication.getName());
-            response.sendRedirect("/artist/dashboard");
+            response.sendRedirect(request.getContextPath() + "/artist/dashboard");
         } else {
             logger.info("Listener login successful: {}", authentication.getName());
-            response.sendRedirect("/user/dashboard");
+            response.sendRedirect(request.getContextPath() + "/user/dashboard");
         }
     }
 }

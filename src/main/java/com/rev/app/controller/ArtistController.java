@@ -149,7 +149,7 @@ public class ArtistController {
             if (!songFile.isEmpty()) {
                 try {
                     String fileName = System.currentTimeMillis() + "_" + songFile.getOriginalFilename();
-                    String uploadDir = "src/main/resources/static/uploads/songs/";
+                    String uploadDir = "C:/Users/Bethini Kavya/Desktop/RevPlay_P2/RevPlay_P2/src/main/resources/static/uploads/songs/";
                     java.io.File dir = new java.io.File(uploadDir);
                     if (!dir.exists())
                         dir.mkdirs();
@@ -333,7 +333,7 @@ public class ArtistController {
             if (!podcastFile.isEmpty()) {
                 try {
                     String fileName = System.currentTimeMillis() + "_" + podcastFile.getOriginalFilename();
-                    String uploadDir = "src/main/resources/static/uploads/podcasts/";
+                    String uploadDir = "C:/Users/Bethini Kavya/Desktop/RevPlay_P2/RevPlay_P2/src/main/resources/static/uploads/podcasts/";
                     java.io.File dir = new java.io.File(uploadDir);
                     if (!dir.exists())
                         dir.mkdirs();

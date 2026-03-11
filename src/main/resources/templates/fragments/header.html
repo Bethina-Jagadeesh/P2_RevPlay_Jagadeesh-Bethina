@@ -3,7 +3,7 @@
 
 <body>
     <div th:fragment="header" class="top-bar">
-        <form th:if="${email != null and showSearch != false}" action="/user/search" method="get"
+        <form th:if="${email != null and showSearch != false}" th:action="@{/user/search}" method="get"
             class="search-wrapper">
             <span class="search-icon">🔍</span>
             <input type="text" name="q" placeholder="What do you want to listen to?" onkeyup="handleSearch(this)"
@@ -16,7 +16,7 @@
                     <img th:if="${profileImageUrl != null}" th:src="${profileImageUrl}" alt="Profile">
                     <span th:if="${profileImageUrl == null}">👤</span>
                 </div>
-                <a href="/logout" class="logout" style="margin-left:8px; margin-right:8px; font-weight:700;">Logout</a>
+                <a th:href="@{/logout}" class="logout" style="margin-left:8px; margin-right:8px; font-weight:700;">Logout</a>
             </div>
         </div>
     </div>
